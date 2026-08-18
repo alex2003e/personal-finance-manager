@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Money } from "@/components/money";
 import { DebtForm } from "./debt-form";
 import { EditDebtDialog } from "./edit-debt-dialog";
 import { PayDebtDialog } from "./pay-debt-dialog";
@@ -71,7 +72,7 @@ export default async function DebtsPage() {
       </div>
 
       {cardsWithLimit.length > 0 && (
-        <Card className={utilizationPct > 50 ? "border-destructive/50" : utilizationPct > 30 ? "border-amber-500/50" : "border-green-500/50"}>
+        <Card className={utilizationPct > 50 ? "border-destructive/50" : utilizationPct > 30 ? "border-warning/50" : "border-success/50"}>
           <CardHeader>
             <CardTitle>Capacidad de endeudamiento (tarjetas)</CardTitle>
             <CardDescription>
@@ -110,7 +111,14 @@ export default async function DebtsPage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">{d.name}</CardTitle>
                   <div className="flex items-center gap-1">
-                    <Badge variant={closed ? "secondary" : "default"}>
+                    <Badge
+                      variant="outline"
+                      className={
+                        closed
+                          ? "border-success/40 bg-success/10 text-success"
+                          : "border-warning/40 bg-warning/10 text-warning"
+                      }
+                    >
                       {closed ? "✅ Pagada" : "⏳ Pendiente"}
                     </Badge>
                     <EditDebtDialog
@@ -131,7 +139,7 @@ export default async function DebtsPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-2xl font-semibold">{formatCOP(balance)}</p>
+                  <Money value={balance} size="xl" tone={closed ? "positive" : "negative"} className="block" />
                   <p className="text-sm text-muted-foreground">
                     {formatPercent(toNumber(d.interestRateEA))} EA · mínimo{" "}
                     {formatCOP(toNumber(d.minPayment))}
