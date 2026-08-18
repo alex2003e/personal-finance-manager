@@ -9,7 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-heading-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,6 +39,10 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -48,73 +52,88 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+  Identidad de "Finanzas": teal como color de marca (acciones, foco), y el
+  mismo lenguaje semántico que ya usa la app para deudas/cuadre (verde =
+  saludable, ámbar = atención, rojo = alerta) llevado a los tokens globales
+  en vez de quedar solo como clases sueltas por página.
+  Ink #0B1220 · Paper #F7F8FB · Teal #0D9488 · Emerald #16A34A · Amber #D97706 · Rose #DC2626
+*/
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --background: #f7f8fb;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0d9488;
+  --primary-foreground: #f0fdfa;
+  --secondary: #eef2f6;
+  --secondary-foreground: #0f172a;
+  --muted: #eef2f6;
+  --muted-foreground: #5b6b82;
+  --accent: #fef3e2;
+  --accent-foreground: #7c3a0a;
+  --destructive: #dc2626;
+  --success: #16a34a;
+  --success-foreground: #f0fdf4;
+  --warning: #d97706;
+  --warning-foreground: #fffbeb;
+  --border: #e2e8f0;
+  --input: #dde3ec;
+  --ring: #0d9488;
+  --chart-1: #0d9488;
+  --chart-2: #16a34a;
+  --chart-3: #d97706;
+  --chart-4: #4338ca;
+  --chart-5: #e11d48;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #0b1220;
+  --sidebar-foreground: #e6ecf5;
+  --sidebar-primary: #2dd4bf;
+  --sidebar-primary-foreground: #06251f;
+  --sidebar-accent: #16213a;
+  --sidebar-accent-foreground: #e6ecf5;
+  --sidebar-border: color-mix(in oklch, white 10%, transparent);
+  --sidebar-ring: #2dd4bf;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0b1220;
+  --foreground: #eef2f8;
+  --card: #121a2c;
+  --card-foreground: #eef2f8;
+  --popover: #121a2c;
+  --popover-foreground: #eef2f8;
+  --primary: #2dd4bf;
+  --primary-foreground: #06251f;
+  --secondary: #1b2740;
+  --secondary-foreground: #eef2f8;
+  --muted: #1b2740;
+  --muted-foreground: #93a1ba;
+  --accent: #2a1c0c;
+  --accent-foreground: #fbbf6a;
+  --destructive: #f87171;
+  --success: #4ade80;
+  --success-foreground: #052e16;
+  --warning: #fbbf24;
+  --warning-foreground: #451a03;
+  --border: color-mix(in oklch, white 12%, transparent);
+  --input: color-mix(in oklch, white 16%, transparent);
+  --ring: #2dd4bf;
+  --chart-1: #2dd4bf;
+  --chart-2: #4ade80;
+  --chart-3: #fbbf24;
+  --chart-4: #818cf8;
+  --chart-5: #fb7185;
+  --sidebar: #060a14;
+  --sidebar-foreground: #e6ecf5;
+  --sidebar-primary: #2dd4bf;
+  --sidebar-primary-foreground: #06251f;
+  --sidebar-accent: #121a2c;
+  --sidebar-accent-foreground: #e6ecf5;
+  --sidebar-border: color-mix(in oklch, white 10%, transparent);
+  --sidebar-ring: #2dd4bf;
 }
 
 @layer base {
@@ -126,5 +145,10 @@
   }
   html {
     @apply font-sans;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-heading tracking-tight;
   }
 }

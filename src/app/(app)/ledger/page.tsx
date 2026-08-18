@@ -132,7 +132,7 @@ export default async function LedgerPage({
           </CardHeader>
           <CardContent className="text-xl font-semibold">{formatCOP(q2Spent)}</CardContent>
         </Card>
-        <Card className={cuadra ? "border-green-500/50" : "border-destructive/50"}>
+        <Card className={cuadra ? "border-success/50" : "border-destructive/50"}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               ¿Cuadra el mes?

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Money } from "@/components/money";
 
 export default async function DashboardPage() {
   const userId = await requireUserId();
@@ -89,39 +90,49 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card className="border-l-4 border-l-primary">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Flujo de caja libre / mes
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">{formatCOP(freeCashFlow)}</CardContent>
+          <CardContent>
+            <Money value={freeCashFlow} size="xl" tone={freeCashFlow >= 0 ? "positive" : "negative"} />
+          </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-destructive">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Deuda total activa
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">{formatCOP(totalDebt)}</CardContent>
+          <CardContent>
+            <Money value={totalDebt} size="xl" tone={totalDebt > 0 ? "negative" : "positive"} />
+          </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-warning">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Meses para saldar deudas
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">
-            {totalDebt <= 0 ? "✅ Ya estás libre" : monthsLeft || "—"}
+          <CardContent className="font-mono text-3xl font-semibold tabular-nums">
+            {totalDebt <= 0 ? (
+              <span className="text-success">✅ Libre</span>
+            ) : (
+              monthsLeft || "—"
+            )}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-primary">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Patrimonio neto
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">{formatCOP(netWorth)}</CardContent>
+          <CardContent>
+            <Money value={netWorth} size="xl" tone={netWorth >= 0 ? "positive" : "negative"} />
+          </CardContent>
         </Card>
       </div>
 
@@ -133,7 +144,7 @@ export default async function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-between">
-            <p className="text-xl font-semibold">{formatCOP(totalLiquidity)}</p>
+            <Money value={totalLiquidity} size="lg" />
             <Link href="/accounts">
               <Button variant="outline" size="sm">
                 Ver cuentas
@@ -148,8 +159,8 @@ export default async function DashboardPage() {
               utilizationPct > 50
                 ? "border-destructive/50"
                 : utilizationPct > 30
-                ? "border-amber-500/50"
-                : "border-green-500/50"
+                ? "border-warning/50"
+                : "border-success/50"
             }
           >
             <CardHeader className="pb-2">
@@ -160,8 +171,8 @@ export default async function DashboardPage() {
             <CardContent className="space-y-2">
               <Progress value={utilizationPct} />
               <p className="text-sm">
-                {formatCOP(totalUsed)} de {formatCOP(totalLimit)} ({utilizationPct.toFixed(0)}%
-                usado)
+                <Money value={totalUsed} size="sm" /> de <Money value={totalLimit} size="sm" /> (
+                {utilizationPct.toFixed(0)}% usado)
               </p>
             </CardContent>
           </Card>
@@ -169,16 +180,18 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className={cuadra ? "border-green-500/50" : "border-destructive/50"}>
+        <Card className={cuadra ? "border-success/50" : "border-destructive/50"}>
           <CardHeader>
             <CardTitle>Cuadre del mes actual</CardTitle>
             <CardDescription>
-              Ingreso esperado {formatCOP(totalIncome)} vs. gastado {formatCOP(monthSpent)}
+              Ingreso esperado <Money value={totalIncome} size="sm" tone="neutral" /> vs. gastado{" "}
+              <Money value={monthSpent} size="sm" tone="neutral" />
             </CardDescription>
           </CardHeader>
           <CardContent className="flex items-center justify-between">
-            <p className="text-xl font-semibold">
-              {cuadra ? "✅ Cuadra" : "⚠️ Revisar"} ({formatCOP(cuadraDiff)})
+            <p className="flex items-center gap-2 text-lg font-medium">
+              {cuadra ? "✅ Cuadra" : "⚠️ Revisar"}
+              <Money value={cuadraDiff} size="lg" tone={cuadra ? "positive" : "negative"} />
             </p>
             <Link href="/ledger">
               <Button variant="outline" size="sm">
@@ -198,8 +211,13 @@ export default async function DashboardPage() {
               const current = toNumber(g.currentAmount);
               const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
               return (
-                <div key={g.id} className="text-sm">
-                  {g.name}: {pct.toFixed(0)}% ({formatCOP(current)} / {formatCOP(target)})
+                <div key={g.id} className="flex items-center justify-between text-sm">
+                  <span>
+                    {g.name}: {pct.toFixed(0)}%
+                  </span>
+                  <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {formatCOP(current)} / {formatCOP(target)}
+                  </span>
                 </div>
               );
             })}
@@ -224,7 +242,7 @@ export default async function DashboardPage() {
             {activeDebts.map((d) => (
               <div key={d.id} className="flex justify-between text-sm">
                 <span>{d.name}</span>
-                <span>{formatCOP(toNumber(d.balance))}</span>
+                <Money value={toNumber(d.balance)} size="sm" tone="negative" />
               </div>
             ))}
             <Link href="/debts">

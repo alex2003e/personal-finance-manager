@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { Nav } from "@/components/nav";
+import { AppShell } from "@/components/app-shell";
 
 export default async function AppLayout({
   children,
@@ -10,10 +10,5 @@ export default async function AppLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  return (
-    <div className="flex min-h-screen flex-1">
-      <Nav userName={session.user.name} />
-      <main className="flex-1 overflow-y-auto p-6">{children}</main>
-    </div>
-  );
+  return <AppShell userName={session.user.name}>{children}</AppShell>;
 }
