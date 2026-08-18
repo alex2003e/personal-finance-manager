@@ -43,9 +43,6 @@ next-env.d.ts
 /src/generated/prisma
 .env
 
-# Herramientas/agentes de IA: cachés y skills locales, no son código del
-# proyecto y pesan bastante. Solo viven en la rama `develop`, no en `main`.
-/.claude/
-/.agents/
-/.windsurf/
-/skills-lock.json
+# Herramientas/agentes de IA: cachés y skills locales de esta rama de
+# desarrollo. En `main` están excluidas (ver ese branch); aquí en `develop`
+# se versionan a propósito para compartir el setup del entorno de trabajo.
