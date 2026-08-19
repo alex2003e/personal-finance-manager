@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -96,11 +97,11 @@ export function InvestmentForm() {
           </div>
           <div className="space-y-1">
             <Label htmlFor="avgCost">Costo promedio (COP)</Label>
-            <Input id="avgCost" name="avgCost" type="number" step="0.01" required />
+            <CurrencyInput id="avgCost" name="avgCost" required />
           </div>
           <div className="space-y-1">
             <Label htmlFor="currentPrice">Precio actual (COP)</Label>
-            <Input id="currentPrice" name="currentPrice" type="number" step="0.01" required />
+            <CurrencyInput id="currentPrice" name="currentPrice" required />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Guardando..." : "Guardar"}

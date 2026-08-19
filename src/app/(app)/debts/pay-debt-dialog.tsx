@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -73,15 +74,7 @@ export function PayDebtDialog({
         <form onSubmit={onSubmit} className="space-y-3">
           <div className="space-y-1">
             <Label htmlFor="amount">Monto (COP)</Label>
-            <Input
-              id="amount"
-              name="amount"
-              type="number"
-              step="0.01"
-              max={balance}
-              defaultValue={balance}
-              required
-            />
+            <CurrencyInput id="amount" name="amount" defaultValue={balance} required />
           </div>
           {accounts.length > 0 && (
             <div className="space-y-1">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -20,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CurrencyFields } from "@/components/currency-fields";
+import { currencySymbol } from "@/lib/currency";
 import { createAccount } from "@/lib/actions/accounts";
 import { Plus } from "lucide-react";
 
@@ -89,7 +91,7 @@ export function AccountForm() {
           <CurrencyFields currency={currency} onCurrencyChange={setCurrency} />
           <div className="space-y-1">
             <Label htmlFor="balance">Saldo actual ({currency})</Label>
-            <Input id="balance" name="balance" type="number" step="0.01" defaultValue={0} />
+            <CurrencyInput id="balance" name="balance" currency={currencySymbol(currency)} defaultValue={0} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Guardando..." : "Guardar"}
