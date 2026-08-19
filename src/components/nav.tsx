@@ -14,6 +14,7 @@ import {
   LineChart,
   LogOut,
   Wallet,
+  Compass,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ const links = [
   { href: "/assets", label: "Activos e Inversiones", icon: Car },
   { href: "/goals", label: "Metas", icon: Target },
   { href: "/reports", label: "Proyecciones", icon: LineChart },
+  { href: "/strategy", label: "Estrategia", icon: Compass },
 ];
 
 export function Nav({
