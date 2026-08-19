@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -88,11 +89,11 @@ export function GoalForm() {
           </div>
           <div className="space-y-1">
             <Label htmlFor="targetAmount">Monto objetivo (COP)</Label>
-            <Input id="targetAmount" name="targetAmount" type="number" step="0.01" required />
+            <CurrencyInput id="targetAmount" name="targetAmount" required />
           </div>
           <div className="space-y-1">
             <Label htmlFor="currentAmount">Monto actual (COP)</Label>
-            <Input id="currentAmount" name="currentAmount" type="number" step="0.01" defaultValue={0} />
+            <CurrencyInput id="currentAmount" name="currentAmount" defaultValue={0} />
           </div>
           <div className="space-y-1">
             <Label htmlFor="targetDate">Fecha objetivo (opcional)</Label>

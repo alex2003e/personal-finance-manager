@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -13,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CurrencyFields } from "@/components/currency-fields";
+import { currencySymbol } from "@/lib/currency";
 import { updateDebt } from "@/lib/actions/debts";
 import { Pencil } from "lucide-react";
 
@@ -90,11 +92,10 @@ export function EditDebtDialog({
           />
           <div className="space-y-1">
             <Label htmlFor="balance">Saldo actual ({currency})</Label>
-            <Input
+            <CurrencyInput
               id="balance"
               name="balance"
-              type="number"
-              step="0.01"
+              currency={currencySymbol(currency)}
               required
               defaultValue={debt.balance}
             />
@@ -102,11 +103,10 @@ export function EditDebtDialog({
           {debt.type === "CARD" && (
             <div className="space-y-1">
               <Label htmlFor="creditLimit">Cupo total de la tarjeta ({currency})</Label>
-              <Input
+              <CurrencyInput
                 id="creditLimit"
                 name="creditLimit"
-                type="number"
-                step="0.01"
+                currency={currencySymbol(currency)}
                 defaultValue={debt.creditLimit ?? undefined}
               />
             </div>
@@ -124,11 +124,10 @@ export function EditDebtDialog({
           </div>
           <div className="space-y-1">
             <Label htmlFor="minPayment">Cuota mínima ({currency})</Label>
-            <Input
+            <CurrencyInput
               id="minPayment"
               name="minPayment"
-              type="number"
-              step="0.01"
+              currency={currencySymbol(currency)}
               required
               defaultValue={debt.minPayment}
             />

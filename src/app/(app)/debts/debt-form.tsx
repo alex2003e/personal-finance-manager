@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -20,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CurrencyFields } from "@/components/currency-fields";
+import { currencySymbol } from "@/lib/currency";
 import { createDebt } from "@/lib/actions/debts";
 import { Plus } from "lucide-react";
 
@@ -94,12 +96,12 @@ export function DebtForm() {
           <CurrencyFields currency={currency} onCurrencyChange={setCurrency} />
           <div className="space-y-1">
             <Label htmlFor="balance">Saldo actual ({currency})</Label>
-            <Input id="balance" name="balance" type="number" step="0.01" required />
+            <CurrencyInput id="balance" name="balance" currency={currencySymbol(currency)} required />
           </div>
           {type === "CARD" && (
             <div className="space-y-1">
               <Label htmlFor="creditLimit">Cupo total de la tarjeta ({currency})</Label>
-              <Input id="creditLimit" name="creditLimit" type="number" step="0.01" />
+              <CurrencyInput id="creditLimit" name="creditLimit" currency={currencySymbol(currency)} />
             </div>
           )}
           <div className="space-y-1">
@@ -108,7 +110,7 @@ export function DebtForm() {
           </div>
           <div className="space-y-1">
             <Label htmlFor="minPayment">Cuota mínima ({currency})</Label>
-            <Input id="minPayment" name="minPayment" type="number" step="0.01" required />
+            <CurrencyInput id="minPayment" name="minPayment" currency={currencySymbol(currency)} required />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Guardando..." : "Guardar"}

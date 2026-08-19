@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -22,7 +23,7 @@ import {
 import { createTransaction } from "@/lib/actions/transactions";
 import { Plus } from "lucide-react";
 
-const CATEGORIES = [
+const EXPENSE_CATEGORIES = [
   "Vivienda",
   "Servicios",
   "Transporte",
@@ -30,10 +31,22 @@ const CATEGORIES = [
   "Comida",
   "Ropa",
   "Imprevistos",
-  "Pago tarjeta",
-  "Ahorro",
   "Otros",
 ];
+
+const INCOME_CATEGORIES = [
+  "Salario",
+  "Ingreso variable",
+  "Arriendo recibido",
+  "Otros ingresos",
+];
+
+const SAVINGS_CATEGORIES = ["Ahorro", "Fondo de emergencia", "Meta"];
+
+const FIXED_CATEGORY_BY_TYPE: Record<string, string> = {
+  DEBT_PAYMENT: "Pago tarjeta",
+  TRANSFER: "Transferencia",
+};
 
 export function TransactionForm({
   debts,
@@ -143,24 +156,34 @@ export function TransactionForm({
               </Select>
             </div>
           )}
-          <div className="space-y-1">
-            <Label htmlFor="category">Categoría</Label>
-            <Input
-              id="category"
-              name="category"
-              list="categories"
-              required
-              defaultValue={type === "DEBT_PAYMENT" ? "Pago tarjeta" : ""}
-            />
-            <datalist id="categories">
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c} />
-              ))}
-            </datalist>
-          </div>
+          {FIXED_CATEGORY_BY_TYPE[type] ? (
+            <input type="hidden" name="category" value={FIXED_CATEGORY_BY_TYPE[type]} />
+          ) : (
+            <div className="space-y-1">
+              <Label htmlFor="category">Categoría</Label>
+              <Input
+                id="category"
+                name="category"
+                list="categories"
+                required
+                key={type}
+                placeholder={type === "INCOME" ? "Ej: Salario" : "Ej: Comida"}
+              />
+              <datalist id="categories">
+                {(type === "INCOME"
+                  ? INCOME_CATEGORIES
+                  : type === "SAVINGS"
+                  ? SAVINGS_CATEGORIES
+                  : EXPENSE_CATEGORIES
+                ).map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
+            </div>
+          )}
           <div className="space-y-1">
             <Label htmlFor="amount">Monto (COP)</Label>
-            <Input id="amount" name="amount" type="number" step="0.01" required />
+            <CurrencyInput id="amount" name="amount" required />
           </div>
           <div className="space-y-1">
             <Label htmlFor="notes">Notas</Label>
