@@ -46,6 +46,9 @@ model Account {
   balance   Decimal     @default(0) @db.Decimal(14, 2)
   currency  String      @default("COP")
   exchangeRateToCOP Decimal? @db.Decimal(16, 4)
+  /// Tasa efectiva anual que paga la cuenta por mantener el dinero ahí
+  /// (rendimientos de ahorro). Null/0 = no genera interés.
+  interestRateEA Decimal? @db.Decimal(7, 4)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 

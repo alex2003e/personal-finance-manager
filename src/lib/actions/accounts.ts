@@ -13,6 +13,7 @@ const accountSchema = z.object({
   balance: z.coerce.number().default(0),
   currency: z.string().default("COP"),
   exchangeRateToCOP: z.coerce.number().positive().optional(),
+  interestRateEA: z.coerce.number().nonnegative().optional(),
 });
 
 export async function createAccount(input: z.infer<typeof accountSchema>) {
