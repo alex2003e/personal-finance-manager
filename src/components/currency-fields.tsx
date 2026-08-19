@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -55,14 +55,12 @@ export function CurrencyFields({
           <Label htmlFor="exchangeRateToCOP">
             Tasa de cambio (1 {currency} = ? COP)
           </Label>
-          <Input
+          <CurrencyInput
             id="exchangeRateToCOP"
             name="exchangeRateToCOP"
-            type="number"
-            step="0.01"
             required
             defaultValue={defaultRate}
-            placeholder="Ej: 4100"
+            placeholder="Ej: 4.100"
           />
         </div>
       )}
