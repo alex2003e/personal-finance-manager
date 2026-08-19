@@ -196,3 +196,52 @@ función misma sin renderizar, como prop).
 **Gotcha de dev server**: cada vez que se migra el schema de Prisma, hay que **reiniciar el
 proceso `next dev`** (matar y volver a levantar) — el cliente cacheado en `globalThis` (ver
 `src/lib/prisma.ts`) no se actualiza con hot-reload.
+
+## Módulo "Estrategia" (2026-08-19, spec-kit — specs/001-predicciones-estrategia/)
+
+Construido siguiendo el flujo completo de spec-kit (constitution → specify → plan →
+tasks → implement), instalado en el repo (`.specify/`, `specs/`). Las 32 tareas de
+`tasks.md` están `[X]`. Nueva ruta `/strategy` ("Estrategia" en el nav) con 6 pestañas,
+**de solo lectura** (no persiste nada nuevo, sin migraciones):
+
+- **Deudas**: compara Avalancha / Bola de Nieve / Óptima lado a lado (interés total,
+  fecha de cierre por deuda), marca la de menor interés como recomendada.
+- **Flujo de caja**: proyección lineal a 3/6/12 meses con alerta si hay 2+ meses de
+  déficit consecutivos. El "gasto mensual" de esta pestaña **incluye las cuotas mínimas
+  de deuda** (a diferencia de "Gastos fijos" en /recurring, que no las incluye) — es
+  intencional y está rotulado en el copy, no es una inconsistencia con /debts o
+  /recurring.
+- **Simulador**: única parte Client Component del módulo — pago extra puntual + % de
+  cambio en ingreso/gasto, recalculado en memoria, nada persistido.
+- **Metas**: fecha estimada de cumplimiento por meta según el ritmo real de abonos
+  (`estimateGoalCompletion`, requiere ≥2 abonos separados en el tiempo), y presupuesto
+  libre después de metas.
+- **Presupuesto**: regla 50/30/20 con clasificación de categoría por mapa fijo
+  (`classifyCategory` en `budget-503020.ts`) — categorías libres/no reconocidas (ej. las
+  que vienen del importador de Excel con nombre = categoría) caen en "deseos" por
+  defecto; es una simplificación conocida, no un bug.
+- **Salud financiera**: score 0-100 (40% deuda/ingreso, 35% tasa de ahorro, 25%
+  cobertura de emergencia — pesos documentados en `specs/001-predicciones-estrategia/research.md`
+  Decisión 7) hoy y proyectado a 6 meses usando el saldo de deuda al mes 6 de la
+  estrategia recomendada.
+
+**Motor reutilizado, no duplicado**: `src/lib/calc/avalanche.ts` se generalizó
+(`orderDebtsByStrategy`, `simulatePayoff`, `compareStrategies`) en vez de crear un motor
+paralelo para Bola de Nieve/Óptima; `simulateAvalanche()` se mantiene como wrapper de
+compatibilidad y `/debts` sigue funcionando igual. Nuevos motores puros en
+`src/lib/calc/`: `cashflow.ts`, `goals-projection.ts`, `budget-503020.ts`,
+`health-score.ts`.
+
+**Bug real encontrado y corregido en QA**: el simulador what-if restaba las cuotas
+mínimas de deuda dos veces al calcular el presupuesto ajustado (`monthlyBudget` que le
+pasa la página ya es ingreso−gasto sin restar cuotas mínimas aparte — el motor de
+avalancha reparte todo el presupuesto entre deudas sin reservarlas antes). Esto hacía que
+hasta un pago extra pareciera empeorar el escenario. Corregido quitando la resta
+duplicada en `whatif-simulator.tsx`.
+
+**Para features futuras que toquen deuda/estrategia**: usar `compareStrategies()` de
+`avalanche.ts` en vez de volver a implementar el comparativo; el `monthlyBudget` que se le
+pasa a cualquier función de este motor es siempre "ingreso recurrente mensual − gasto
+recurrente mensual" (frequency=MONTHLY, mismo criterio que `/debts` y `/dashboard`, **no**
+la versión con equivalencia de todas las frecuencias que usa `/recurring` — son
+intencionalmente distintas, ver nota de flujo de caja arriba).

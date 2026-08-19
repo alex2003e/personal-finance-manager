@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import {
   LineChart,
   Line,
@@ -44,11 +45,11 @@ export function ProjectionCalculator({ startingBalance }: { startingBalance: num
         <CardContent className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="monthly">Aporte mensual (COP)</Label>
-            <Input
+            <CurrencyInput
               id="monthly"
-              type="number"
-              value={monthly}
-              onChange={(e) => setMonthly(Number(e.target.value))}
+              name="monthly"
+              defaultValue={monthly}
+              onValueChange={setMonthly}
             />
           </div>
           <div className="space-y-1">

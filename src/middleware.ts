@@ -13,6 +13,7 @@ const PROTECTED_PREFIXES = [
   "/assets",
   "/goals",
   "/reports",
+  "/strategy",
   "/onboarding",
 ];
 
