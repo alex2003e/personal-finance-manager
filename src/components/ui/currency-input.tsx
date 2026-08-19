@@ -50,7 +50,7 @@ export function CurrencyInput({
 
   return (
     <div className="relative">
-      <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+      <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm font-medium text-foreground/60">
         {currency}
       </span>
       <input
@@ -62,7 +62,8 @@ export function CurrencyInput({
         placeholder={placeholder}
         value={formatThousands(digits)}
         onChange={handleChange}
-        className={cn(INPUT_BASE_CLASSES, "pl-7 font-mono tabular-nums", className)}
+        className={cn(INPUT_BASE_CLASSES, "pl-9 font-mono tabular-nums", className)}
+        style={{ paddingLeft: `${currency.length * 0.5 + 2}rem` }}
       />
       <input type="hidden" name={name} value={digits} />
     </div>
