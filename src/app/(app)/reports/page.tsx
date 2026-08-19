@@ -48,7 +48,7 @@ export default async function ReportsPage() {
     id: a.id,
     name: a.name,
     currentValue: toNumber(a.balance),
-    annualRatePercent: 0,
+    annualRatePercent: a.interestRateEA ? toNumber(a.interestRateEA) : 0,
   }));
 
   const investmentItems = investments.map((i) => ({
@@ -100,7 +100,7 @@ export default async function ReportsPage() {
           <CategoryProjection
             icon="piggyBank"
             title="Ahorros"
-            description="Tus cuentas de ahorro/corriente, proyectadas sin rendimiento (la mayoría de cuentas de ahorro en Colombia no generan interés relevante)."
+            description="Tus cuentas de ahorro/corriente, proyectadas con la tasa EA que configuraste por cuenta (0% si no le pusiste una)."
             items={savingsItems}
             emptyLabel="Sin cuentas registradas"
             emptyDescription="Agrega tus cuentas de ahorro en la sección Cuentas para verlas proyectadas aquí."

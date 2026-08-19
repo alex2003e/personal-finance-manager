@@ -13,48 +13,51 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { CurrencyFields } from "@/components/currency-fields";
 import { currencySymbol } from "@/lib/currency";
-import { createAccount } from "@/lib/actions/accounts";
-import { Plus } from "lucide-react";
+import { updateAccount } from "@/lib/actions/accounts";
+import { Pencil } from "lucide-react";
 
-const TYPE_ITEMS = { SAVINGS: "Ahorros", CHECKING: "Corriente", CASH: "Efectivo" };
-
-export function AccountForm() {
+export function EditAccountDialog({
+  account,
+}: {
+  account: {
+    id: string;
+    name: string;
+    bank: string | null;
+    type: "SAVINGS" | "CHECKING" | "CASH";
+    balance: number;
+    currency: string;
+    exchangeRateToCOP: number | null;
+    interestRateEA: number | null;
+  };
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [type, setType] = useState("SAVINGS");
-  const [currency, setCurrency] = useState("COP");
+  const [currency, setCurrency] = useState(account.currency);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     const form = new FormData(e.currentTarget);
     try {
-      await createAccount({
+      await updateAccount(account.id, {
         name: String(form.get("name")),
         bank: String(form.get("bank") || ""),
-        type: type as "SAVINGS" | "CHECKING" | "CASH",
+        type: account.type,
         balance: Number(form.get("balance") || 0),
         currency,
         exchangeRateToCOP:
           currency !== "COP" ? Number(form.get("exchangeRateToCOP")) : undefined,
         interestRateEA:
-          type !== "CASH" && form.get("interestRateEA")
+          account.type !== "CASH" && form.get("interestRateEA")
             ? Number(form.get("interestRateEA"))
             : undefined,
       });
-      toast.success("Cuenta agregada");
+      toast.success("Cuenta actualizada");
       setOpen(false);
     } catch {
-      toast.error("No se pudo guardar");
+      toast.error("No se pudo actualizar");
     } finally {
       setLoading(false);
     }
@@ -62,42 +65,37 @@ export function AccountForm() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button>
-          <Plus className="mr-1 h-4 w-4" />
-          Nueva cuenta
+      <DialogTrigger render={<Button size="sm" variant="ghost">
+          <Pencil className="h-4 w-4" />
         </Button>} />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nueva cuenta</DialogTitle>
+          <DialogTitle>Editar {account.name}</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-3">
           <div className="space-y-1">
             <Label htmlFor="name">Nombre</Label>
-            <Input id="name" name="name" required placeholder="Cuenta de ahorros" />
+            <Input id="name" name="name" required defaultValue={account.name} />
           </div>
           <div className="space-y-1">
             <Label htmlFor="bank">Banco</Label>
-            <Input id="bank" name="bank" placeholder="Bancolombia" />
+            <Input id="bank" name="bank" defaultValue={account.bank ?? ""} />
           </div>
-          <div className="space-y-1">
-            <Label>Tipo</Label>
-            <Select items={TYPE_ITEMS} value={type} onValueChange={(v) => setType(v ?? "SAVINGS")}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="SAVINGS">Ahorros</SelectItem>
-                <SelectItem value="CHECKING">Corriente</SelectItem>
-                <SelectItem value="CASH">Efectivo</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <CurrencyFields currency={currency} onCurrencyChange={setCurrency} />
+          <CurrencyFields
+            currency={currency}
+            onCurrencyChange={setCurrency}
+            defaultRate={account.exchangeRateToCOP ?? undefined}
+          />
           <div className="space-y-1">
             <Label htmlFor="balance">Saldo actual ({currency})</Label>
-            <CurrencyInput id="balance" name="balance" currency={currencySymbol(currency)} defaultValue={0} />
+            <CurrencyInput
+              id="balance"
+              name="balance"
+              currency={currencySymbol(currency)}
+              defaultValue={account.balance}
+            />
           </div>
-          {type !== "CASH" && (
+          {account.type !== "CASH" && (
             <div className="space-y-1">
               <Label htmlFor="interestRateEA">Tasa EA que paga la cuenta (%, opcional)</Label>
               <Input
@@ -105,6 +103,7 @@ export function AccountForm() {
                 name="interestRateEA"
                 type="number"
                 step="0.0001"
+                defaultValue={account.interestRateEA ?? undefined}
                 placeholder="Ej: 4.5"
               />
               <p className="text-xs text-muted-foreground">
@@ -113,7 +112,7 @@ export function AccountForm() {
             </div>
           )}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Guardando..." : "Guardar"}
+            {loading ? "Guardando..." : "Guardar cambios"}
           </Button>
         </form>
       </DialogContent>

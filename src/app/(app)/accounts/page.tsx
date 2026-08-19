@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
-import { toNumber } from "@/lib/format";
+import { toNumber, formatPercent } from "@/lib/format";
 import { toCOP } from "@/lib/currency";
 import {
   Card,
@@ -14,6 +14,7 @@ import { Money } from "@/components/money";
 import { EmptyState } from "@/components/empty-state";
 import { Landmark } from "lucide-react";
 import { AccountForm } from "./account-form";
+import { EditAccountDialog } from "./edit-account-dialog";
 import { TransferDialog } from "./transfer-dialog";
 import { DeleteAccountButton } from "./delete-account-button";
 
@@ -72,7 +73,21 @@ export default async function AccountsPage() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">{a.name}</CardTitle>
-                    <Badge variant="secondary">{TYPE_LABEL[a.type]}</Badge>
+                    <div className="flex items-center gap-1">
+                      <Badge variant="secondary">{TYPE_LABEL[a.type]}</Badge>
+                      <EditAccountDialog
+                        account={{
+                          id: a.id,
+                          name: a.name,
+                          bank: a.bank,
+                          type: a.type,
+                          balance,
+                          currency: a.currency,
+                          exchangeRateToCOP: a.exchangeRateToCOP ? toNumber(a.exchangeRateToCOP) : null,
+                          interestRateEA: a.interestRateEA ? toNumber(a.interestRateEA) : null,
+                        }}
+                      />
+                    </div>
                   </div>
                   <CardDescription>{a.bank}</CardDescription>
                 </CardHeader>
@@ -81,6 +96,11 @@ export default async function AccountsPage() {
                   {a.currency !== "COP" && (
                     <p className="text-xs text-muted-foreground">
                       {a.currency} · ≈ {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(cop)}
+                    </p>
+                  )}
+                  {a.interestRateEA != null && toNumber(a.interestRateEA) > 0 && (
+                    <p className="text-xs text-success">
+                      {formatPercent(toNumber(a.interestRateEA))} EA
                     </p>
                   )}
                   <DeleteAccountButton id={a.id} />
