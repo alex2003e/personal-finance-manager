@@ -65,8 +65,19 @@ export function InvestmentForm() {
           </div>
           <div className="space-y-1">
             <Label>Tipo</Label>
-            <Select value={type} onValueChange={(v) => setType(v ?? "FUND")}>
-              <SelectTrigger>
+            <Select
+              items={{
+                STOCK: "Acción",
+                ETF: "ETF",
+                CRYPTO: "Cripto",
+                FUND: "Fondo",
+                REAL_ESTATE: "Inmobiliario",
+                OTHER: "Otro",
+              }}
+              value={type}
+              onValueChange={(v) => setType(v ?? "FUND")}
+            >
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

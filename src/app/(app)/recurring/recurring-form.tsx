@@ -75,8 +75,8 @@ export function RecurringForm() {
           </div>
           <div className="space-y-1">
             <Label>Tipo</Label>
-            <Select value={type} onValueChange={(v) => setType(v ?? "EXPENSE")}>
-              <SelectTrigger>
+            <Select items={{ INCOME: "Ingreso", EXPENSE: "Gasto" }} value={type} onValueChange={(v) => setType(v ?? "EXPENSE")}>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -87,8 +87,8 @@ export function RecurringForm() {
           </div>
           <div className="space-y-1">
             <Label>Frecuencia</Label>
-            <Select value={frequency} onValueChange={(v) => setFrequency(v ?? "MONTHLY")}>
-              <SelectTrigger>
+            <Select items={{ MONTHLY: "Mensual", BIWEEKLY: "Quincenal", WEEKLY: "Semanal", YEARLY: "Anual" }} value={frequency} onValueChange={(v) => setFrequency(v ?? "MONTHLY")}>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

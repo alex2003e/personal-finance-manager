@@ -13,6 +13,8 @@ const debtSchema = z.object({
   interestRateEA: z.coerce.number().nonnegative(),
   minPayment: z.coerce.number().nonnegative(),
   creditLimit: z.coerce.number().nonnegative().optional(),
+  currency: z.string().default("COP"),
+  exchangeRateToCOP: z.coerce.number().positive().optional(),
   type: z.enum(["CARD", "LOAN"]).default("CARD"),
 });
 

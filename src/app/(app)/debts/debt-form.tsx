@@ -19,13 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CurrencyFields } from "@/components/currency-fields";
 import { createDebt } from "@/lib/actions/debts";
 import { Plus } from "lucide-react";
+
+const TYPE_ITEMS = { CARD: "Tarjeta de crédito", LOAN: "Préstamo" };
 
 export function DebtForm() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState("CARD");
+  const [currency, setCurrency] = useState("COP");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,6 +46,9 @@ export function DebtForm() {
           type === "CARD" && form.get("creditLimit")
             ? Number(form.get("creditLimit"))
             : undefined,
+        currency,
+        exchangeRateToCOP:
+          currency !== "COP" ? Number(form.get("exchangeRateToCOP")) : undefined,
         type: type as "CARD" | "LOAN",
       });
       toast.success("Deuda agregada");
@@ -66,8 +73,8 @@ export function DebtForm() {
         <form onSubmit={onSubmit} className="space-y-3">
           <div className="space-y-1">
             <Label>Tipo</Label>
-            <Select value={type} onValueChange={(v) => setType(v ?? "CARD")}>
-              <SelectTrigger>
+            <Select items={TYPE_ITEMS} value={type} onValueChange={(v) => setType(v ?? "CARD")}>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -84,13 +91,14 @@ export function DebtForm() {
             <Label htmlFor="creditor">Acreedor</Label>
             <Input id="creditor" name="creditor" required placeholder="Nu Colombia" />
           </div>
+          <CurrencyFields currency={currency} onCurrencyChange={setCurrency} />
           <div className="space-y-1">
-            <Label htmlFor="balance">Saldo actual (COP)</Label>
+            <Label htmlFor="balance">Saldo actual ({currency})</Label>
             <Input id="balance" name="balance" type="number" step="0.01" required />
           </div>
           {type === "CARD" && (
             <div className="space-y-1">
-              <Label htmlFor="creditLimit">Cupo total de la tarjeta (COP)</Label>
+              <Label htmlFor="creditLimit">Cupo total de la tarjeta ({currency})</Label>
               <Input id="creditLimit" name="creditLimit" type="number" step="0.01" />
             </div>
           )}
@@ -99,7 +107,7 @@ export function DebtForm() {
             <Input id="interestRateEA" name="interestRateEA" type="number" step="0.0001" required />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="minPayment">Cuota mínima (COP)</Label>
+            <Label htmlFor="minPayment">Cuota mínima ({currency})</Label>
             <Input id="minPayment" name="minPayment" type="number" step="0.01" required />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>

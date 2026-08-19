@@ -15,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/empty-state";
+import { Car, TrendingUp } from "lucide-react";
 import { AssetForm } from "./asset-form";
 import { InvestmentForm } from "./investment-form";
 import { DeleteAssetButton, DeleteInvestmentButton } from "./delete-buttons";
@@ -64,37 +66,38 @@ export default async function AssetsPage() {
           <AssetForm />
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Valor estimado</TableHead>
-                <TableHead>Notas</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {assets.map((a) => (
-                <TableRow key={a.id}>
-                  <TableCell className="font-medium">{a.name}</TableCell>
-                  <TableCell>{ASSET_TYPE_LABEL[a.type]}</TableCell>
-                  <TableCell>{formatCOP(toNumber(a.estimatedValue))}</TableCell>
-                  <TableCell className="text-muted-foreground">{a.notes}</TableCell>
-                  <TableCell>
-                    <DeleteAssetButton id={a.id} />
-                  </TableCell>
-                </TableRow>
-              ))}
-              {assets.length === 0 && (
+          {assets.length === 0 ? (
+            <EmptyState
+              icon={Car}
+              title="Sin activos registrados"
+              description="Agrega tus motos, vehículos o propiedades para incluirlos en tu patrimonio neto y ver su proyección de valor."
+            />
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    Sin activos registrados
-                  </TableCell>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Valor estimado</TableHead>
+                  <TableHead>Notas</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {assets.map((a) => (
+                  <TableRow key={a.id}>
+                    <TableCell className="font-medium">{a.name}</TableCell>
+                    <TableCell>{ASSET_TYPE_LABEL[a.type]}</TableCell>
+                    <TableCell>{formatCOP(toNumber(a.estimatedValue))}</TableCell>
+                    <TableCell className="text-muted-foreground">{a.notes}</TableCell>
+                    <TableCell>
+                      <DeleteAssetButton id={a.id} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -104,41 +107,42 @@ export default async function AssetsPage() {
           <InvestmentForm />
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Cantidad</TableHead>
-                <TableHead>Costo prom.</TableHead>
-                <TableHead>Precio actual</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {investments.map((i) => (
-                <TableRow key={i.id}>
-                  <TableCell className="font-medium">{i.name}</TableCell>
-                  <TableCell>{INV_TYPE_LABEL[i.type]}</TableCell>
-                  <TableCell>{toNumber(i.quantity)}</TableCell>
-                  <TableCell>{formatCOP(toNumber(i.avgCost))}</TableCell>
-                  <TableCell>{formatCOP(toNumber(i.currentPrice))}</TableCell>
-                  <TableCell>{formatCOP(toNumber(i.quantity) * toNumber(i.currentPrice))}</TableCell>
-                  <TableCell>
-                    <DeleteInvestmentButton id={i.id} />
-                  </TableCell>
-                </TableRow>
-              ))}
-              {investments.length === 0 && (
+          {investments.length === 0 ? (
+            <EmptyState
+              icon={TrendingUp}
+              title="Sin inversiones registradas"
+              description="Agrega fondos, acciones o cripto para verlas proyectadas en la pestaña Inversiones de Proyecciones."
+            />
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
-                    Sin inversiones registradas
-                  </TableCell>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Cantidad</TableHead>
+                  <TableHead>Costo prom.</TableHead>
+                  <TableHead>Precio actual</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {investments.map((i) => (
+                  <TableRow key={i.id}>
+                    <TableCell className="font-medium">{i.name}</TableCell>
+                    <TableCell>{INV_TYPE_LABEL[i.type]}</TableCell>
+                    <TableCell>{toNumber(i.quantity)}</TableCell>
+                    <TableCell>{formatCOP(toNumber(i.avgCost))}</TableCell>
+                    <TableCell>{formatCOP(toNumber(i.currentPrice))}</TableCell>
+                    <TableCell>{formatCOP(toNumber(i.quantity) * toNumber(i.currentPrice))}</TableCell>
+                    <TableCell>
+                      <DeleteInvestmentButton id={i.id} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

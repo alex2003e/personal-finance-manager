@@ -22,7 +22,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/accounts", label: "Cuentas", icon: Landmark },
-  { href: "/debts", label: "Deudas", icon: CreditCard },
+  { href: "/debts", label: "Deudas / Tarjetas de Crédito", icon: CreditCard },
   { href: "/recurring", label: "Recurrentes", icon: Repeat },
   { href: "/ledger", label: "Movimientos", icon: Notebook },
   { href: "/assets", label: "Activos e Inversiones", icon: Car },

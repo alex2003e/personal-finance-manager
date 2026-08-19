@@ -22,6 +22,13 @@ import {
 import { createGoal } from "@/lib/actions/goals";
 import { Plus } from "lucide-react";
 
+const TYPE_ITEMS = {
+  EMERGENCY_FUND: "Fondo de emergencia",
+  DEBT_FREE: "Libre de deudas",
+  NET_WORTH: "Patrimonio neto",
+  CUSTOM: "Personalizada",
+};
+
 export function GoalForm() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,6 +46,7 @@ export function GoalForm() {
         targetAmount: Number(form.get("targetAmount")),
         currentAmount: Number(form.get("currentAmount") || 0),
         targetDate: dateStr ? new Date(dateStr) : undefined,
+        targetMonths: form.get("targetMonths") ? Number(form.get("targetMonths")) : undefined,
       });
       toast.success("Meta creada");
       setOpen(false);
@@ -66,8 +74,8 @@ export function GoalForm() {
           </div>
           <div className="space-y-1">
             <Label>Tipo</Label>
-            <Select value={type} onValueChange={(v) => setType(v ?? "EMERGENCY_FUND")}>
-              <SelectTrigger>
+            <Select items={TYPE_ITEMS} value={type} onValueChange={(v) => setType(v ?? "EMERGENCY_FUND")}>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -87,8 +95,15 @@ export function GoalForm() {
             <Input id="currentAmount" name="currentAmount" type="number" step="0.01" defaultValue={0} />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="targetDate">Fecha objetivo</Label>
+            <Label htmlFor="targetDate">Fecha objetivo (opcional)</Label>
             <Input id="targetDate" name="targetDate" type="date" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="targetMonths">Plazo en meses para la cuota fija (opcional)</Label>
+            <Input id="targetMonths" name="targetMonths" type="number" min={1} placeholder="Ej: 12" />
+            <p className="text-xs text-muted-foreground">
+              Con esto calculamos cuánto ahorrar cada mes para llegar a tiempo.
+            </p>
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Guardando..." : "Guardar"}

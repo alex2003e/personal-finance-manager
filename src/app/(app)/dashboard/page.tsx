@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
 import { formatCOP, toNumber } from "@/lib/format";
+import { toCOP } from "@/lib/currency";
 import { simulateAvalanche, monthsToPayoff } from "@/lib/calc/avalanche";
 import {
   Card,
@@ -38,8 +39,13 @@ export default async function DashboardPage() {
       prisma.account.findMany({ where: { userId } }),
     ]);
 
+  const debtCOP = (d: (typeof debts)[number], amount: number) =>
+    toCOP(amount, d.currency, d.exchangeRateToCOP ? toNumber(d.exchangeRateToCOP) : null);
+  const accountCOP = (a: (typeof accounts)[number], amount: number) =>
+    toCOP(amount, a.currency, a.exchangeRateToCOP ? toNumber(a.exchangeRateToCOP) : null);
+
   const activeDebts = debts.filter((d) => !d.closedAt && Number(d.balance) > 0);
-  const totalDebt = activeDebts.reduce((s, d) => s + toNumber(d.balance), 0);
+  const totalDebt = activeDebts.reduce((s, d) => s + debtCOP(d, toNumber(d.balance)), 0);
 
   const totalIncome = incomeItems.reduce((s, i) => s + toNumber(i.amount), 0);
   const totalExpenses = expenseItems.reduce((s, e) => s + toNumber(e.amount), 0);
@@ -52,9 +58,9 @@ export default async function DashboardPage() {
           activeDebts.map((d) => ({
             id: d.id,
             name: d.name,
-            balance: toNumber(d.balance),
+            balance: debtCOP(d, toNumber(d.balance)),
             interestRateEA: toNumber(d.interestRateEA),
-            minPayment: toNumber(d.minPayment),
+            minPayment: debtCOP(d, toNumber(d.minPayment)),
           })),
           monthlyBudgetForDebt
         )
@@ -66,8 +72,9 @@ export default async function DashboardPage() {
     (s, i) => s + toNumber(i.quantity) * toNumber(i.currentPrice),
     0
   );
-  const allDebtBalance = debts.reduce((s, d) => s + toNumber(d.balance), 0);
-  const netWorth = totalAssets + totalInvestments - allDebtBalance;
+  const totalLiquidity = accounts.reduce((s, a) => s + accountCOP(a, toNumber(a.balance)), 0);
+  const allDebtBalance = debts.reduce((s, d) => s + debtCOP(d, toNumber(d.balance)), 0);
+  const netWorth = totalAssets + totalInvestments + totalLiquidity - allDebtBalance;
 
   const monthSpent = monthTransactions
     .filter((t) => t.type !== "INCOME" && t.type !== "CARD_CHARGE")
@@ -75,11 +82,9 @@ export default async function DashboardPage() {
   const cuadraDiff = totalIncome - monthSpent;
   const cuadra = cuadraDiff >= 0;
 
-  const totalLiquidity = accounts.reduce((s, a) => s + toNumber(a.balance), 0);
-
   const cardsWithLimit = debts.filter((d) => d.type === "CARD" && d.creditLimit != null);
-  const totalLimit = cardsWithLimit.reduce((s, d) => s + toNumber(d.creditLimit!), 0);
-  const totalUsed = cardsWithLimit.reduce((s, d) => s + toNumber(d.balance), 0);
+  const totalLimit = cardsWithLimit.reduce((s, d) => s + debtCOP(d, toNumber(d.creditLimit!)), 0);
+  const totalUsed = cardsWithLimit.reduce((s, d) => s + debtCOP(d, toNumber(d.balance)), 0);
   const utilizationPct = totalLimit > 0 ? Math.min((totalUsed / totalLimit) * 100, 100) : 0;
 
   return (

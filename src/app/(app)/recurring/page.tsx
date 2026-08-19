@@ -15,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/empty-state";
+import { Repeat } from "lucide-react";
 import { RecurringForm } from "./recurring-form";
 import { RecurringRowActions } from "./recurring-row-actions";
 
@@ -68,46 +70,47 @@ export default async function RecurringPage() {
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Categoría</TableHead>
-                <TableHead>Frecuencia</TableHead>
-                <TableHead>Monto</TableHead>
-                <TableHead>Guardar Q1</TableHead>
-                <TableHead>Guardar Q2</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => {
-                const amount = toNumber(r.amount);
-                const q1 = Math.round(amount / 2);
-                const q2 = amount - q1;
-                return (
-                  <TableRow key={r.id} className={r.active ? "" : "opacity-50"}>
-                    <TableCell className="font-medium">{r.name}</TableCell>
-                    <TableCell>{r.category}</TableCell>
-                    <TableCell>{FREQ_LABEL[r.frequency]}</TableCell>
-                    <TableCell>{formatCOP(amount)}</TableCell>
-                    <TableCell>{formatCOP(q1)}</TableCell>
-                    <TableCell>{formatCOP(q2)}</TableCell>
-                    <TableCell>
-                      <RecurringRowActions id={r.id} active={r.active} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {rows.length === 0 && (
+          {rows.length === 0 ? (
+            <EmptyState
+              icon={Repeat}
+              title={`Sin ${title.toLowerCase()} todavía`}
+              description="Regístralos para que el dashboard y el simulador de deudas calculen bien tu presupuesto disponible."
+            />
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
-                    Sin registros
-                  </TableCell>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead>Frecuencia</TableHead>
+                  <TableHead>Monto</TableHead>
+                  <TableHead>Guardar Q1</TableHead>
+                  <TableHead>Guardar Q2</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {rows.map((r) => {
+                  const amount = toNumber(r.amount);
+                  const q1 = Math.round(amount / 2);
+                  const q2 = amount - q1;
+                  return (
+                    <TableRow key={r.id} className={r.active ? "" : "opacity-50"}>
+                      <TableCell className="font-medium">{r.name}</TableCell>
+                      <TableCell>{r.category}</TableCell>
+                      <TableCell>{FREQ_LABEL[r.frequency]}</TableCell>
+                      <TableCell>{formatCOP(amount)}</TableCell>
+                      <TableCell>{formatCOP(q1)}</TableCell>
+                      <TableCell>{formatCOP(q2)}</TableCell>
+                      <TableCell>
+                        <RecurringRowActions id={r.id} active={r.active} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     );
