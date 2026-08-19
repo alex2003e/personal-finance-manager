@@ -72,7 +72,11 @@ export function EditAccountDialog({
         <DialogHeader>
           <DialogTitle>Editar {account.name}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-3">
+        <form
+          key={`${account.id}-${account.balance}-${account.interestRateEA}-${account.exchangeRateToCOP}`}
+          onSubmit={onSubmit}
+          className="space-y-3"
+        >
           <div className="space-y-1">
             <Label htmlFor="name">Nombre</Label>
             <Input id="name" name="name" required defaultValue={account.name} />
