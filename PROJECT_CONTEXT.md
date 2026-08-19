@@ -142,3 +142,57 @@ eligió la versión completa igual.
   nada lo escribe todavía) — el dashboard calcula el patrimonio neto en vivo, no hay gráfica de
   evolución real todavía (la de `/reports` es solo proyección hacia adelante).
 - Sin tests automatizados; validado solo con `npm run build` + QA manual en navegador.
+
+## Ronda de pulido UI/UX (2026-08-18, commits 1c7f89b y bd780ae)
+
+Pedido explícito del usuario: paleta propia (no gris plano), y 8 puntos de pulido. Todo
+implementado, buildeado y verificado en navegador (con capturas), commiteado y pusheado a
+`main` + `develop` (sincronizadas por merge).
+
+**Rediseño visual (1c7f89b):**
+- Paleta propia con tokens semánticos `--success`/`--warning` además de `--primary`/`--destructive`
+  (antes solo shadcn gris). Tema oscuro funcional con toggle (`next-themes`).
+- Tipografía: Space Grotesk (títulos) + Geist Mono con tabular-nums para cifras de dinero, vía
+  el componente `<Money>` (`src/components/money.tsx`) — es el patrón a reusar para cualquier
+  cifra monetaria nueva, con `tone="positive"|"negative"|"neutral"`.
+- Sidebar con identidad propia (`bg-sidebar` tokens) + `AppShell` (`src/components/app-shell.tsx`)
+  con cajón deslizante para móvil.
+
+**Pulido de 8 puntos (bd780ae):**
+1. **Bug de Base UI Select**: el valor seleccionado se quedaba mostrando el `value` crudo (ej.
+   "CARD") en vez de la etiqueta. Fix: todo `<Select>` debe llevar el prop `items` (Record
+   value→label) para que `SelectValue` resuelva el texto — ver `src/components/ui/select.tsx`.
+   **Si se agrega un Select nuevo, hay que pasarle `items` o vuelve el bug.**
+2. "Deudas" → "Deudas / Tarjetas de Crédito" en nav y título de página.
+3. Estados vacíos con `<EmptyState>` (`src/components/empty-state.tsx`) en vez de texto plano —
+   aplicado en Deudas, Cuentas, Activos, Metas, Recurrentes.
+4. Proyecciones separadas por categoría en pestañas (`/reports`): Patrimonio neto, Ahorros,
+   Inversiones, Vehículos, Bienes inmuebles. Depreciación de vehículos -20%/año (vida útil de 5
+   años, Estatuto Tributario/DIAN), inmuebles +4%/año por defecto (aproximación, no cifra
+   oficial) — editable por activo vía `Asset.annualRatePercent`. Motor en
+   `src/lib/calc/depreciation.ts`.
+5. **Multi-moneda** en Deudas y Cuentas: campos `currency` + `exchangeRateToCOP` (nullable).
+   Conversión centralizada en `src/lib/currency.ts` (`toCOP`). **Todo cálculo agregado que sume
+   `balance` de `Debt`/`Account` debe pasar por `toCOP()` primero** (dashboard, avalancha,
+   capacidad de endeudamiento ya lo hacen — revisar si se agregan nuevos).
+6. `devIndicators: false` en `next.config.ts` (quita el indicador flotante de Next dev).
+7. Inputs/Selects rediseñados (h-10, rounded-xl, bg-secondary/40) — menos planos.
+8. Metas: página de detalle `/goals/[id]` con historial de abonos (`GoalContribution`), cuota
+   fija sugerida (`Goal.targetMonths`, motor en `src/lib/calc/goal-quota.ts`), y
+   `ConfirmDeleteButton` (`src/components/confirm-delete-button.tsx`, usa shadcn AlertDialog) en
+   vez de `confirm()`/`alert()` nativos del navegador en **toda** la app (reemplazado en 7
+   archivos de botones de eliminar).
+
+**Bug real encontrado y corregido en QA**: pasar un ícono de `lucide-react` (función/componente)
+como prop de un Server Component a un Client Component rompe con "Functions cannot be passed
+directly to Client Components" (RSC no serializa funciones). Pasaba en
+`reports/category-projection.tsx`. Fix: ese componente cliente recibe una **clave de texto**
+(`CategoryIconKey`) y resuelve el ícono internamente contra un mapa `ICONS`, no el componente.
+**Si se pasa un ícono de lucide a cualquier Client Component desde un Server Component, usar
+este mismo patrón** (no pasa nada si el ícono se renderiza ya como JSX antes de cruzar la
+frontera, como en `<TabsTrigger><Wallet /></TabsTrigger>` — solo falla cuando se pasa la
+función misma sin renderizar, como prop).
+
+**Gotcha de dev server**: cada vez que se migra el schema de Prisma, hay que **reiniciar el
+proceso `next dev`** (matar y volver a levantar) — el cliente cacheado en `globalThis` (ver
+`src/lib/prisma.ts`) no se actualiza con hot-reload.
