@@ -76,7 +76,11 @@ export function EditDebtDialog({
         <DialogHeader>
           <DialogTitle>Editar {debt.name}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-3">
+        <form
+          key={`${debt.id}-${debt.balance}-${debt.minPayment}-${debt.creditLimit}-${debt.interestRateEA}-${debt.exchangeRateToCOP}`}
+          onSubmit={onSubmit}
+          className="space-y-3"
+        >
           <div className="space-y-1">
             <Label htmlFor="name">Nombre</Label>
             <Input id="name" name="name" required defaultValue={debt.name} />
