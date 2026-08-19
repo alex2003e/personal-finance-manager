@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
 import { formatCOP, formatPercent, toNumber } from "@/lib/format";
+import { toCOP } from "@/lib/currency";
 import { simulateAvalanche } from "@/lib/calc/avalanche";
 import {
   Card,
@@ -12,6 +13,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Money } from "@/components/money";
+import { EmptyState } from "@/components/empty-state";
+import { CreditCard } from "lucide-react";
 import { DebtForm } from "./debt-form";
 import { EditDebtDialog } from "./edit-debt-dialog";
 import { PayDebtDialog } from "./pay-debt-dialog";
@@ -39,31 +42,34 @@ export default async function DebtsPage() {
   const totalExpenses = expenseItems.reduce((s, e) => s + toNumber(e.amount), 0);
   const monthlyBudgetForDebt = Math.max(totalIncome - totalExpenses, 0);
 
+  const debtCOP = (d: (typeof debts)[number], amount: number) =>
+    toCOP(amount, d.currency, d.exchangeRateToCOP ? toNumber(d.exchangeRateToCOP) : null);
+
   const simulation =
     activeDebts.length > 0 && monthlyBudgetForDebt > 0
       ? simulateAvalanche(
           activeDebts.map((d) => ({
             id: d.id,
             name: d.name,
-            balance: toNumber(d.balance),
+            balance: debtCOP(d, toNumber(d.balance)),
             interestRateEA: toNumber(d.interestRateEA),
-            minPayment: toNumber(d.minPayment),
+            minPayment: debtCOP(d, toNumber(d.minPayment)),
           })),
           monthlyBudgetForDebt
         )
       : [];
 
-  // Capacidad de endeudamiento agregada (solo tarjetas con cupo definido)
+  // Capacidad de endeudamiento agregada (solo tarjetas con cupo definido), en COP
   const cardsWithLimit = debts.filter((d) => d.type === "CARD" && d.creditLimit != null);
-  const totalLimit = cardsWithLimit.reduce((s, d) => s + toNumber(d.creditLimit!), 0);
-  const totalUsed = cardsWithLimit.reduce((s, d) => s + toNumber(d.balance), 0);
+  const totalLimit = cardsWithLimit.reduce((s, d) => s + debtCOP(d, toNumber(d.creditLimit!)), 0);
+  const totalUsed = cardsWithLimit.reduce((s, d) => s + debtCOP(d, toNumber(d.balance)), 0);
   const utilizationPct = totalLimit > 0 ? Math.min((totalUsed / totalLimit) * 100, 100) : 0;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Deudas</h1>
+          <h1 className="text-2xl font-semibold">Deudas / Tarjetas de Crédito</h1>
           <p className="text-muted-foreground">
             Estrategia avalancha: paga primero la tasa más alta.
           </p>
@@ -95,6 +101,15 @@ export default async function DebtsPage() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {debts.length === 0 && (
+        <EmptyState
+          icon={CreditCard}
+          title="Aún no tienes deudas registradas"
+          description="Agrega una tarjeta o préstamo, o impórtalas desde tu Excel en el asistente de onboarding."
+          action={<DebtForm />}
+        />
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -130,6 +145,8 @@ export default async function DebtsPage() {
                         interestRateEA: toNumber(d.interestRateEA),
                         minPayment: toNumber(d.minPayment),
                         creditLimit: limit,
+                        currency: d.currency,
+                        exchangeRateToCOP: d.exchangeRateToCOP ? toNumber(d.exchangeRateToCOP) : null,
                         type: d.type,
                       }}
                     />
@@ -140,9 +157,15 @@ export default async function DebtsPage() {
               <CardContent className="space-y-3">
                 <div>
                   <Money value={balance} size="xl" tone={closed ? "positive" : "negative"} className="block" />
+                  {d.currency !== "COP" && (
+                    <p className="text-xs text-muted-foreground">
+                      {d.currency} · ≈ {formatCOP(debtCOP(d, balance))}
+                    </p>
+                  )}
                   <p className="text-sm text-muted-foreground">
                     {formatPercent(toNumber(d.interestRateEA))} EA · mínimo{" "}
                     {formatCOP(toNumber(d.minPayment))}
+                    {d.currency !== "COP" ? ` ${d.currency}` : ""}
                   </p>
                 </div>
 
@@ -210,15 +233,6 @@ export default async function DebtsPage() {
             </Card>
           );
         })}
-        {debts.length === 0 && (
-          <p className="text-muted-foreground">
-            Aún no tienes deudas registradas. Agrega una o impórtalas desde el Excel en{" "}
-            <a href="/onboarding" className="underline">
-              onboarding
-            </a>
-            .
-          </p>
-        )}
       </div>
 
       {simulation.length > 0 && (

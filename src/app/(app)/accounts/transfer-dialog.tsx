@@ -67,8 +67,8 @@ export function TransferDialog({
         <form onSubmit={onSubmit} className="space-y-3">
           <div className="space-y-1">
             <Label>Desde</Label>
-            <Select value={from} onValueChange={(v) => setFrom(v ?? undefined)}>
-              <SelectTrigger>
+            <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} value={from} onValueChange={(v) => setFrom(v ?? undefined)}>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -82,8 +82,8 @@ export function TransferDialog({
           </div>
           <div className="space-y-1">
             <Label>Hacia</Label>
-            <Select value={to} onValueChange={(v) => setTo(v ?? undefined)}>
-              <SelectTrigger>
+            <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} value={to} onValueChange={(v) => setTo(v ?? undefined)}>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

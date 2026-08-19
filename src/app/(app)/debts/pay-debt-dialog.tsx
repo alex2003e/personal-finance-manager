@@ -86,8 +86,12 @@ export function PayDebtDialog({
           {accounts.length > 0 && (
             <div className="space-y-1">
               <Label>Pagar desde</Label>
-              <Select value={accountId} onValueChange={(v) => setAccountId(v ?? undefined)}>
-                <SelectTrigger>
+              <Select
+                items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))}
+                value={accountId}
+                onValueChange={(v) => setAccountId(v ?? undefined)}
+              >
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecciona una cuenta" />
                 </SelectTrigger>
                 <SelectContent>

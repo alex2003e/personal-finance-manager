@@ -96,8 +96,8 @@ export function TransactionForm({
           </div>
           <div className="space-y-1">
             <Label>Tipo</Label>
-            <Select value={type} onValueChange={(v) => setType(v ?? "EXPENSE")}>
-              <SelectTrigger>
+            <Select items={{ INCOME: "Ingreso", EXPENSE: "Gasto", DEBT_PAYMENT: "Pago de deuda", SAVINGS: "Ahorro", TRANSFER: "Transferencia" }} value={type} onValueChange={(v) => setType(v ?? "EXPENSE")}>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -112,8 +112,8 @@ export function TransactionForm({
           {type === "DEBT_PAYMENT" && (
             <div className="space-y-1">
               <Label>Deuda</Label>
-              <Select value={debtId} onValueChange={(v) => setDebtId(v ?? undefined)}>
-                <SelectTrigger>
+              <Select items={Object.fromEntries(debts.map((d) => [d.id, d.name]))} value={debtId} onValueChange={(v) => setDebtId(v ?? undefined)}>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecciona una deuda" />
                 </SelectTrigger>
                 <SelectContent>
@@ -129,8 +129,8 @@ export function TransactionForm({
           {accounts.length > 0 && (
             <div className="space-y-1">
               <Label>Cuenta</Label>
-              <Select value={accountId} onValueChange={(v) => setAccountId(v ?? undefined)}>
-                <SelectTrigger>
+              <Select items={Object.fromEntries(accounts.map((a) => [a.id, a.name]))} value={accountId} onValueChange={(v) => setAccountId(v ?? undefined)}>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecciona una cuenta" />
                 </SelectTrigger>
                 <SelectContent>

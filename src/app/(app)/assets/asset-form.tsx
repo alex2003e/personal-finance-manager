@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createAsset } from "@/lib/actions/assets";
+import { DEFAULT_ANNUAL_RATE_BY_ASSET_TYPE } from "@/lib/calc/depreciation";
 import { Plus } from "lucide-react";
 
 export function AssetForm() {
@@ -31,11 +32,13 @@ export function AssetForm() {
     e.preventDefault();
     setLoading(true);
     const form = new FormData(e.currentTarget);
+    const rateStr = String(form.get("annualRatePercent") || "");
     try {
       await createAsset({
         name: String(form.get("name")),
         type: type as "VEHICLE" | "PROPERTY" | "INVESTMENT" | "OTHER",
         estimatedValue: Number(form.get("estimatedValue")),
+        annualRatePercent: rateStr ? Number(rateStr) : undefined,
         notes: String(form.get("notes") || ""),
       });
       toast.success("Activo agregado");
@@ -64,8 +67,12 @@ export function AssetForm() {
           </div>
           <div className="space-y-1">
             <Label>Tipo</Label>
-            <Select value={type} onValueChange={(v) => setType(v ?? "VEHICLE")}>
-              <SelectTrigger>
+            <Select
+              items={{ VEHICLE: "Vehículo", PROPERTY: "Propiedad", INVESTMENT: "Inversión", OTHER: "Otro" }}
+              value={type}
+              onValueChange={(v) => setType(v ?? "VEHICLE")}
+            >
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -79,6 +86,21 @@ export function AssetForm() {
           <div className="space-y-1">
             <Label htmlFor="estimatedValue">Valor estimado (COP)</Label>
             <Input id="estimatedValue" name="estimatedValue" type="number" step="0.01" required />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="annualRatePercent">
+              % anual de valorización/depreciación (opcional)
+            </Label>
+            <Input
+              id="annualRatePercent"
+              name="annualRatePercent"
+              type="number"
+              step="0.01"
+              placeholder={`Por defecto: ${DEFAULT_ANNUAL_RATE_BY_ASSET_TYPE[type]}%/año`}
+            />
+            <p className="text-xs text-muted-foreground">
+              Negativo si se deprecia (ej. -20 para vehículos), positivo si se valoriza.
+            </p>
           </div>
           <div className="space-y-1">
             <Label htmlFor="notes">Notas</Label>

@@ -24,6 +24,7 @@ model User {
   assets           Asset[]
   investments      Investment[]
   goals            Goal[]
+  goalContributions GoalContribution[]
   netWorthSnapshots NetWorthSnapshot[]
 }
 
@@ -43,6 +44,8 @@ model Account {
   bank      String?
   type      AccountType @default(SAVINGS)
   balance   Decimal     @default(0) @db.Decimal(14, 2)
+  currency  String      @default("COP")
+  exchangeRateToCOP Decimal? @db.Decimal(16, 4)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
@@ -66,6 +69,8 @@ model Debt {
   interestRateEA Decimal   @db.Decimal(7, 4)
   minPayment     Decimal   @db.Decimal(14, 2)
   creditLimit    Decimal?  @db.Decimal(14, 2)
+  currency       String    @default("COP")
+  exchangeRateToCOP Decimal? @db.Decimal(16, 4)
   type           DebtType  @default(CARD)
   openedAt       DateTime  @default(now())
   closedAt       DateTime?
@@ -189,6 +194,10 @@ model Asset {
   name           String
   type           AssetType
   estimatedValue Decimal   @db.Decimal(14, 2)
+  /// % anual de valorización (positivo) o depreciación (negativo) para
+  /// proyecciones. Si es null, se usa el valor por defecto según `type`
+  /// (vehículos: -20%/año recta según vida útil DIAN; inmuebles: +4%/año).
+  annualRatePercent Decimal? @db.Decimal(7, 4)
   notes          String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -236,10 +245,31 @@ model Goal {
   targetAmount  Decimal  @db.Decimal(14, 2)
   currentAmount Decimal  @default(0) @db.Decimal(14, 2)
   targetDate    DateTime?
+  /// Meses elegidos para alcanzar la meta (para calcular la cuota fija
+  /// sugerida); independiente de targetDate, que es solo informativa.
+  targetMonths  Int?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  contributions GoalContribution[]
+
   @@index([userId])
+}
+
+/// Un abono/aporte individual a una meta — permite ver el desglose de cómo
+/// se fue construyendo el ahorro en vez de solo un número editado a mano.
+model GoalContribution {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalId    String
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  amount    Decimal  @db.Decimal(14, 2)
+  date      DateTime @default(now())
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([goalId])
 }
 
 model NetWorthSnapshot {

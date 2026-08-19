@@ -9,6 +9,7 @@ const assetSchema = z.object({
   name: z.string().min(1),
   type: z.enum(["VEHICLE", "PROPERTY", "INVESTMENT", "OTHER"]),
   estimatedValue: z.coerce.number().nonnegative(),
+  annualRatePercent: z.coerce.number().optional(),
   notes: z.string().optional(),
 });
 

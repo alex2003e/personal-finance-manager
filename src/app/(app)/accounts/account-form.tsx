@@ -19,13 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CurrencyFields } from "@/components/currency-fields";
 import { createAccount } from "@/lib/actions/accounts";
 import { Plus } from "lucide-react";
+
+const TYPE_ITEMS = { SAVINGS: "Ahorros", CHECKING: "Corriente", CASH: "Efectivo" };
 
 export function AccountForm() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState("SAVINGS");
+  const [currency, setCurrency] = useState("COP");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -37,6 +41,9 @@ export function AccountForm() {
         bank: String(form.get("bank") || ""),
         type: type as "SAVINGS" | "CHECKING" | "CASH",
         balance: Number(form.get("balance") || 0),
+        currency,
+        exchangeRateToCOP:
+          currency !== "COP" ? Number(form.get("exchangeRateToCOP")) : undefined,
       });
       toast.success("Cuenta agregada");
       setOpen(false);
@@ -68,8 +75,8 @@ export function AccountForm() {
           </div>
           <div className="space-y-1">
             <Label>Tipo</Label>
-            <Select value={type} onValueChange={(v) => setType(v ?? "SAVINGS")}>
-              <SelectTrigger>
+            <Select items={TYPE_ITEMS} value={type} onValueChange={(v) => setType(v ?? "SAVINGS")}>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -79,8 +86,9 @@ export function AccountForm() {
               </SelectContent>
             </Select>
           </div>
+          <CurrencyFields currency={currency} onCurrencyChange={setCurrency} />
           <div className="space-y-1">
-            <Label htmlFor="balance">Saldo actual (COP)</Label>
+            <Label htmlFor="balance">Saldo actual ({currency})</Label>
             <Input id="balance" name="balance" type="number" step="0.01" defaultValue={0} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>

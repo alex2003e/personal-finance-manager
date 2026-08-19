@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { CurrencyFields } from "@/components/currency-fields";
 import { updateDebt } from "@/lib/actions/debts";
 import { Pencil } from "lucide-react";
 
@@ -26,11 +27,14 @@ export function EditDebtDialog({
     interestRateEA: number;
     minPayment: number;
     creditLimit: number | null;
+    currency: string;
+    exchangeRateToCOP: number | null;
     type: "CARD" | "LOAN";
   };
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [currency, setCurrency] = useState(debt.currency);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,6 +51,9 @@ export function EditDebtDialog({
           debt.type === "CARD" && form.get("creditLimit")
             ? Number(form.get("creditLimit"))
             : undefined,
+        currency,
+        exchangeRateToCOP:
+          currency !== "COP" ? Number(form.get("exchangeRateToCOP")) : undefined,
         type: debt.type,
       });
       toast.success("Deuda actualizada");
@@ -76,8 +83,13 @@ export function EditDebtDialog({
             <Label htmlFor="creditor">Acreedor</Label>
             <Input id="creditor" name="creditor" required defaultValue={debt.creditor} />
           </div>
+          <CurrencyFields
+            currency={currency}
+            onCurrencyChange={setCurrency}
+            defaultRate={debt.exchangeRateToCOP ?? undefined}
+          />
           <div className="space-y-1">
-            <Label htmlFor="balance">Saldo actual (COP)</Label>
+            <Label htmlFor="balance">Saldo actual ({currency})</Label>
             <Input
               id="balance"
               name="balance"
@@ -89,7 +101,7 @@ export function EditDebtDialog({
           </div>
           {debt.type === "CARD" && (
             <div className="space-y-1">
-              <Label htmlFor="creditLimit">Cupo total de la tarjeta (COP)</Label>
+              <Label htmlFor="creditLimit">Cupo total de la tarjeta ({currency})</Label>
               <Input
                 id="creditLimit"
                 name="creditLimit"
@@ -111,7 +123,7 @@ export function EditDebtDialog({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="minPayment">Cuota mínima (COP)</Label>
+            <Label htmlFor="minPayment">Cuota mínima ({currency})</Label>
             <Input
               id="minPayment"
               name="minPayment"

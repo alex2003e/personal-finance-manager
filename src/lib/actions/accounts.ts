@@ -11,6 +11,8 @@ const accountSchema = z.object({
   bank: z.string().optional(),
   type: z.enum(["SAVINGS", "CHECKING", "CASH"]).default("SAVINGS"),
   balance: z.coerce.number().default(0),
+  currency: z.string().default("COP"),
+  exchangeRateToCOP: z.coerce.number().positive().optional(),
 });
 
 export async function createAccount(input: z.infer<typeof accountSchema>) {
