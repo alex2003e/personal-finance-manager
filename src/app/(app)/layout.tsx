@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppShell } from "@/components/app-shell";
+import { computeAlerts } from "@/lib/alerts";
 
 export default async function AppLayout({
   children,
@@ -10,5 +11,11 @@ export default async function AppLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  return <AppShell userName={session.user.name}>{children}</AppShell>;
+  const alerts = await computeAlerts(session.user.id);
+
+  return (
+    <AppShell userName={session.user.name} alerts={alerts}>
+      {children}
+    </AppShell>
+  );
 }

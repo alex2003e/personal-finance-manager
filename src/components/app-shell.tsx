@@ -4,12 +4,16 @@ import { useState } from "react";
 import { Menu, X, Wallet } from "lucide-react";
 import { Nav } from "@/components/nav";
 import { Button } from "@/components/ui/button";
+import { NotificationsBell } from "@/components/notifications-bell";
+import type { FinanceAlert } from "@/lib/alerts";
 
 export function AppShell({
   userName,
+  alerts = [],
   children,
 }: {
   userName?: string | null;
+  alerts?: FinanceAlert[];
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -24,15 +28,18 @@ export function AppShell({
           </div>
           <span className="font-heading text-base font-semibold">Finanzas</span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Abrir menú"
-          className="text-sidebar-foreground hover:bg-sidebar-accent"
-          onClick={() => setOpen(true)}
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <NotificationsBell alerts={alerts} />
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Abrir menú"
+            className="text-sidebar-foreground hover:bg-sidebar-accent"
+            onClick={() => setOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
       </header>
 
       {/* Cajón deslizante — solo móvil */}
@@ -62,7 +69,7 @@ export function AppShell({
 
       {/* Sidebar fija — desktop */}
       <div className="hidden md:block">
-        <Nav userName={userName} />
+        <Nav userName={userName} alerts={alerts} />
       </div>
 
       <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>

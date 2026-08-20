@@ -15,10 +15,13 @@ import {
   LogOut,
   Wallet,
   Compass,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationsBell } from "@/components/notifications-bell";
+import type { FinanceAlert } from "@/lib/alerts";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -26,6 +29,7 @@ const links = [
   { href: "/debts", label: "Deudas / Tarjetas de Crédito", icon: CreditCard },
   { href: "/recurring", label: "Recurrentes", icon: Repeat },
   { href: "/ledger", label: "Movimientos", icon: Notebook },
+  { href: "/import", label: "Importar", icon: Upload },
   { href: "/assets", label: "Activos e Inversiones", icon: Car },
   { href: "/goals", label: "Metas", icon: Target },
   { href: "/reports", label: "Proyecciones", icon: LineChart },
@@ -35,9 +39,11 @@ const links = [
 export function Nav({
   userName,
   onNavigate,
+  alerts = [],
 }: {
   userName?: string | null;
   onNavigate?: () => void;
+  alerts?: FinanceAlert[];
 }) {
   const pathname = usePathname();
 
@@ -57,7 +63,10 @@ export function Nav({
             )}
           </div>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <NotificationsBell alerts={alerts} />
+          <ThemeToggle />
+        </div>
       </div>
       <nav className="flex-1 space-y-1 px-3">
         {links.map(({ href, label, icon: Icon }) => {
