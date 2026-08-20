@@ -89,9 +89,19 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-muted-foreground">Resumen general de tus finanzas</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <p className="text-muted-foreground">Resumen general de tus finanzas</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" render={<a href="/api/export?format=xlsx" />}>
+            Exportar Excel
+          </Button>
+          <Button variant="outline" size="sm" render={<a href="/api/export?format=pdf" />}>
+            Exportar PDF
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
