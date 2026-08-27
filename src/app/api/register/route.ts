@@ -4,11 +4,12 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { createVerificationCode } from "@/lib/verification-code";
 import { sendVerificationCodeEmail } from "@/lib/mailer";
+import { passwordFieldSchema } from "@/lib/password-policy";
 
 const schema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   email: z.string().email("Email inválido"),
-  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+  password: passwordFieldSchema,
 });
 
 export async function POST(req: Request) {
