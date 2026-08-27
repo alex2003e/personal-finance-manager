@@ -23,10 +23,13 @@ function ResetPasswordForm() {
   const code = searchParams.get("code") ?? "";
 
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+
+  const passwordsMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
 
   if (!email || !code) {
     return (
@@ -47,6 +50,10 @@ function ResetPasswordForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (newPassword !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
     setLoading(true);
     try {
       await resetPassword({ email, code, newPassword });
@@ -94,8 +101,28 @@ function ResetPasswordForm() {
                 </button>
               </div>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+              <Input
+                id="confirmPassword"
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={8}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                aria-invalid={passwordsMismatch}
+                className={passwordsMismatch ? "border-destructive" : undefined}
+              />
+              {passwordsMismatch && (
+                <p className="text-sm text-destructive">Las contraseñas no coinciden</p>
+              )}
+            </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading || !newPassword || newPassword !== confirmPassword}
+            >
               {loading ? "Guardando..." : "Restablecer contraseña"}
             </Button>
           </form>
