@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { updateName, updateEmail, changePassword, setEmailAlertsEnabled } from "@/lib/actions/profile";
+import { AvatarUpload } from "@/components/avatar-upload";
 
 function PasswordField({
   id,
@@ -118,10 +119,12 @@ export function ProfileForms({
   name: initialName,
   email: initialEmail,
   emailAlertsEnabled: initialEmailAlerts,
+  image,
 }: {
   name: string;
   email: string;
   emailAlertsEnabled: boolean;
+  image: string | null;
 }) {
   const router = useRouter();
 
@@ -183,6 +186,8 @@ export function ProfileForms({
           <CardTitle className="text-base">Cuenta</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <AvatarUpload name={initialName || initialEmail} image={image} />
+
           <form onSubmit={onSaveName} className="space-y-1">
             <Label htmlFor="name">Nombre</Label>
             <div className="flex gap-2">
