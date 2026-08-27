@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Card,
@@ -19,11 +19,12 @@ import {
   verifyPasswordResetCode,
   getPasswordResetCodeExpiry,
 } from "@/lib/actions/auth-verification";
+import { getResetSession, setResetToken } from "@/lib/reset-password-session";
 
-function VerifyResetCodeForm() {
+export default function VerifyResetCodePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const email = searchParams.get("email") ?? "";
+  const [email, setEmail] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
 
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -33,8 +34,13 @@ function VerifyResetCodeForm() {
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
 
   useEffect(() => {
-    if (email) getPasswordResetCodeExpiry({ email }).then(setExpiresAt);
-  }, [email]);
+    const session = getResetSession();
+    setEmail(session?.email ?? null);
+    setReady(true);
+    if (session?.email) getPasswordResetCodeExpiry({ email: session.email }).then(setExpiresAt);
+  }, []);
+
+  if (!ready) return null;
 
   if (!email) {
     return (
@@ -56,13 +62,13 @@ function VerifyResetCodeForm() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!email) return;
     setError(null);
     setLoading(true);
     try {
       const { token, expiresAt: tokenExpiresAt } = await verifyPasswordResetCode({ email, code });
-      router.push(
-        `/reset-password?email=${encodeURIComponent(email)}&token=${token}&expiresAt=${encodeURIComponent(tokenExpiresAt)}`
-      );
+      setResetToken(email, token, tokenExpiresAt);
+      router.push("/reset-password");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo verificar el código");
     } finally {
@@ -71,6 +77,7 @@ function VerifyResetCodeForm() {
   }
 
   async function onResend() {
+    if (!email) return;
     setResending(true);
     setError(null);
     setResent(false);
@@ -132,13 +139,5 @@ function VerifyResetCodeForm() {
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-export default function VerifyResetCodePage() {
-  return (
-    <Suspense>
-      <VerifyResetCodeForm />
-    </Suspense>
   );
 }

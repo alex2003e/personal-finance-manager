@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { requestPasswordReset } from "@/lib/actions/auth-verification";
+import { setResetEmail } from "@/lib/reset-password-session";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -28,8 +29,9 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     try {
       await requestPasswordReset({ email });
+      setResetEmail(email);
       setSent(true);
-      setTimeout(() => router.push(`/verify-reset-code?email=${encodeURIComponent(email)}`), 1200);
+      setTimeout(() => router.push("/verify-reset-code"), 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo enviar el código");
     } finally {
