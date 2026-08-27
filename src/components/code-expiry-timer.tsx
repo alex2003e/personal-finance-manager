@@ -15,10 +15,14 @@ export function CodeExpiryTimer({
   expiresAt,
   onExpire,
   className,
+  expiredLabel = "El código expiró, pide uno nuevo.",
+  activeLabel = "El código vence en",
 }: {
   expiresAt: string | null;
   onExpire?: () => void;
   className?: string;
+  expiredLabel?: string;
+  activeLabel?: string;
 }) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -41,10 +45,10 @@ export function CodeExpiryTimer({
   return (
     <p className={cn("text-xs", expired ? "text-destructive" : "text-muted-foreground", className)}>
       {expired ? (
-        "El código expiró, pide uno nuevo."
+        expiredLabel
       ) : (
         <>
-          El código vence en{" "}
+          {activeLabel}{" "}
           <span className="font-mono font-medium text-foreground">{formatRemaining(msRemaining)}</span>
         </>
       )}

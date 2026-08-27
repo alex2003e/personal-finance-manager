@@ -40,6 +40,10 @@ model User {
 enum VerificationCodeType {
   EMAIL_VERIFY
   PASSWORD_RESET
+  /// Token opaco emitido tras verificar el código de PASSWORD_RESET, para el
+  /// paso final de "escribir la nueva contraseña" sin heredar la vigencia
+  /// corta del código de 6 dígitos (ver src/lib/verification-code.ts).
+  PASSWORD_RESET_CONFIRMED
 }
 
 /// Código numérico de 6 dígitos de un solo uso, enviado por correo, para

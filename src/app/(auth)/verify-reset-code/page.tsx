@@ -59,8 +59,10 @@ function VerifyResetCodeForm() {
     setError(null);
     setLoading(true);
     try {
-      await verifyPasswordResetCode({ email, code });
-      router.push(`/reset-password?email=${encodeURIComponent(email)}&code=${code}`);
+      const { token, expiresAt: tokenExpiresAt } = await verifyPasswordResetCode({ email, code });
+      router.push(
+        `/reset-password?email=${encodeURIComponent(email)}&token=${token}&expiresAt=${encodeURIComponent(tokenExpiresAt)}`
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo verificar el código");
     } finally {

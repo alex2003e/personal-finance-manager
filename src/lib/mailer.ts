@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { CODE_TTL_MINUTES } from "@/lib/verification-code";
 
 let transporter: nodemailer.Transporter | null = null;
 
@@ -46,7 +47,7 @@ export async function sendVerificationCodeEmail(to: string, code: string) {
       "Confirma tu correo",
       `<p style="color:#334155;">Usa este código para verificar tu cuenta:</p>
        <p style="font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #0d9488;">${code}</p>
-       <p style="color:#94a3b8; font-size: 13px;">Expira en 15 minutos.</p>`
+       <p style="color:#94a3b8; font-size: 13px;">Expira en ${CODE_TTL_MINUTES} minutos.</p>`
     )
   );
 }
@@ -59,7 +60,7 @@ export async function sendPasswordResetCodeEmail(to: string, code: string) {
       "Recuperar contraseña",
       `<p style="color:#334155;">Usa este código para crear una nueva contraseña:</p>
        <p style="font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #0d9488;">${code}</p>
-       <p style="color:#94a3b8; font-size: 13px;">Expira en 15 minutos.</p>`
+       <p style="color:#94a3b8; font-size: 13px;">Expira en ${CODE_TTL_MINUTES} minutos.</p>`
     )
   );
 }
