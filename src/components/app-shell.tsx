@@ -9,10 +9,12 @@ import type { FinanceAlert } from "@/lib/alerts";
 
 export function AppShell({
   userName,
+  userImage,
   alerts = [],
   children,
 }: {
   userName?: string | null;
+  userImage?: string | null;
   alerts?: FinanceAlert[];
   children: React.ReactNode;
 }) {
@@ -62,14 +64,14 @@ export function AppShell({
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <Nav userName={userName} onNavigate={() => setOpen(false)} />
+            <Nav userName={userName} userImage={userImage} onNavigate={() => setOpen(false)} />
           </div>
         </div>
       )}
 
       {/* Sidebar fija — desktop */}
       <div className="hidden md:block">
-        <Nav userName={userName} alerts={alerts} />
+        <Nav userName={userName} userImage={userImage} alerts={alerts} />
       </div>
 
       <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>

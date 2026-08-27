@@ -16,7 +16,6 @@ import {
   Wallet,
   Compass,
   Upload,
-  UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,12 +36,20 @@ const links = [
   { href: "/strategy", label: "Estrategia", icon: Compass },
 ];
 
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
+}
+
 export function Nav({
   userName,
+  userImage,
   onNavigate,
   alerts = [],
 }: {
   userName?: string | null;
+  userImage?: string | null;
   onNavigate?: () => void;
   alerts?: FinanceAlert[];
 }) {
@@ -101,7 +108,14 @@ export function Nav({
               : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           )}
         >
-          <UserRound className="h-4 w-4" />
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sidebar-primary text-[10px] font-semibold text-sidebar-primary-foreground">
+            {userImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={userImage} alt="" className="h-full w-full object-cover" />
+            ) : (
+              initials(userName ?? "?")
+            )}
+          </span>
           Perfil
         </Link>
         <Button

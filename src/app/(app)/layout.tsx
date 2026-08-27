@@ -14,14 +14,14 @@ export default async function AppLayout({
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { emailVerified: true },
+    select: { emailVerified: true, image: true },
   });
   if (!user?.emailVerified) redirect("/verify-email");
 
   const alerts = await computeAlerts(session.user.id);
 
   return (
-    <AppShell userName={session.user.name} alerts={alerts}>
+    <AppShell userName={session.user.name} userImage={user.image} alerts={alerts}>
       {children}
     </AppShell>
   );

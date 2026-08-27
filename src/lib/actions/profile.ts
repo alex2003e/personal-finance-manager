@@ -65,12 +65,43 @@ export async function getProfile() {
   const userId = await requireUserId();
   return prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { id: true, name: true, email: true, createdAt: true, emailAlertsEnabled: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      createdAt: true,
+      emailAlertsEnabled: true,
+      image: true,
+    },
   });
 }
 
 export async function setEmailAlertsEnabled(enabled: boolean) {
   const userId = await requireUserId();
   await prisma.user.update({ where: { id: userId }, data: { emailAlertsEnabled: enabled } });
+  revalidatePath("/profile");
+}
+
+const MAX_AVATAR_BYTES = 600_000; // ~450KB de imagen tras codificar en base64
+
+const avatarSchema = z.object({
+  dataUrl: z.string().refine((v) => v.startsWith("data:image/"), "Formato de imagen inválido"),
+});
+
+export async function updateAvatar(input: z.infer<typeof avatarSchema>) {
+  const userId = await requireUserId();
+  const data = avatarSchema.parse(input);
+
+  if (data.dataUrl.length > MAX_AVATAR_BYTES) {
+    throw new Error("La imagen es demasiado grande");
+  }
+
+  await prisma.user.update({ where: { id: userId }, data: { image: data.dataUrl } });
+  revalidatePath("/profile");
+}
+
+export async function removeAvatar() {
+  const userId = await requireUserId();
+  await prisma.user.update({ where: { id: userId }, data: { image: null } });
   revalidatePath("/profile");
 }
