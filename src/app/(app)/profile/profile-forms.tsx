@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { updateName, updateEmail, changePassword, setEmailAlertsEnabled } from "@/lib/actions/profile";
 import { AvatarUpload } from "@/components/avatar-upload";
+import { PasswordRequirements, isPasswordValid } from "@/components/password-requirements";
 
 function PasswordField({
   id,
@@ -100,13 +101,16 @@ function ChangePasswordDialog() {
             value={currentPassword}
             onChange={setCurrentPassword}
           />
-          <PasswordField
-            id="newPassword"
-            label="Nueva contraseña"
-            value={newPassword}
-            onChange={setNewPassword}
-          />
-          <Button type="submit" className="w-full" disabled={loading}>
+          <div className="space-y-1">
+            <PasswordField
+              id="newPassword"
+              label="Nueva contraseña"
+              value={newPassword}
+              onChange={setNewPassword}
+            />
+            <PasswordRequirements password={newPassword} />
+          </div>
+          <Button type="submit" className="w-full" disabled={loading || !isPasswordValid(newPassword)}>
             {loading ? "Guardando..." : "Cambiar contraseña"}
           </Button>
         </form>

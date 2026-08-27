@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff, Check, X } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { PasswordRequirements } from "@/components/password-requirements";
 import {
   Card,
   CardContent,
@@ -25,10 +25,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const passwordRules = [
-    { label: "Al menos 8 caracteres", met: password.length >= 8 },
-  ];
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -116,26 +112,7 @@ export default function RegisterPage() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            {password.length > 0 && (
-              <ul className="space-y-1 pt-1">
-                {passwordRules.map((rule) => (
-                  <li
-                    key={rule.label}
-                    className={cn(
-                      "flex items-center gap-1.5 text-xs",
-                      rule.met ? "text-success" : "text-muted-foreground"
-                    )}
-                  >
-                    {rule.met ? (
-                      <Check className="h-3.5 w-3.5 shrink-0" />
-                    ) : (
-                      <X className="h-3.5 w-3.5 shrink-0" />
-                    )}
-                    {rule.label}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <PasswordRequirements password={password} />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
