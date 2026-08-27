@@ -61,7 +61,7 @@ export default function RegisterPage() {
       return;
     }
 
-    router.push("/onboarding");
+    router.push("/verify-email");
     router.refresh();
   }
 

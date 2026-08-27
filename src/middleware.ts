@@ -15,7 +15,9 @@ const PROTECTED_PREFIXES = [
   "/reports",
   "/strategy",
   "/import",
+  "/profile",
   "/onboarding",
+  "/verify-email",
 ];
 
 export default auth((req) => {
