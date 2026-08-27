@@ -65,8 +65,8 @@ function VerifyResetCodeForm() {
     try {
       await requestPasswordReset({ email });
       setResent(true);
-    } catch {
-      setError("No se pudo reenviar el código");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo reenviar el código");
     } finally {
       setResending(false);
     }
