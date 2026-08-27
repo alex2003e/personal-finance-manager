@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { createVerificationCode } from "@/lib/verification-code";
+import { sendVerificationCodeEmail } from "@/lib/mailer";
 
 const schema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
@@ -36,6 +38,15 @@ export async function POST(req: Request) {
     data: { name, email, passwordHash },
     select: { id: true, email: true, name: true },
   });
+
+  try {
+    const code = await createVerificationCode(user.id, "EMAIL_VERIFY");
+    await sendVerificationCodeEmail(user.email, code);
+  } catch (err) {
+    // No bloqueamos el registro si el correo falla (ej. Gmail sin
+    // configurar aún en desarrollo); el usuario puede reenviar el código.
+    console.error("No se pudo enviar el correo de verificación:", err);
+  }
 
   return NextResponse.json({ user }, { status: 201 });
 }

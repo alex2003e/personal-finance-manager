@@ -16,6 +16,7 @@ import {
   Wallet,
   Compass,
   Upload,
+  UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -89,7 +90,20 @@ export function Nav({
           );
         })}
       </nav>
-      <div className="border-t border-sidebar-border p-3">
+      <div className="space-y-1 border-t border-sidebar-border p-3">
+        <Link
+          href="/profile"
+          onClick={onNavigate}
+          className={cn(
+            "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors md:py-2",
+            pathname.startsWith("/profile")
+              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+              : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          )}
+        >
+          <UserRound className="h-4 w-4" />
+          Perfil
+        </Link>
         <Button
           variant="ghost"
           className="w-full justify-start gap-2.5 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
