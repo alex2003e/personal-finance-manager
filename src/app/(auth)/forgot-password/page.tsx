@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
     await requestPasswordReset({ email });
     setLoading(false);
     setSent(true);
-    setTimeout(() => router.push(`/reset-password?email=${encodeURIComponent(email)}`), 1200);
+    setTimeout(() => router.push(`/verify-reset-code?email=${encodeURIComponent(email)}`), 1200);
   }
 
   return (

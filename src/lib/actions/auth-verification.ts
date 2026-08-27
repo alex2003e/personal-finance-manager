@@ -4,7 +4,11 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
-import { createVerificationCode, consumeVerificationCode } from "@/lib/verification-code";
+import {
+  createVerificationCode,
+  consumeVerificationCode,
+  isVerificationCodeValid,
+} from "@/lib/verification-code";
 import { sendVerificationCodeEmail, sendPasswordResetCodeEmail } from "@/lib/mailer";
 
 export async function resendVerificationCode() {
@@ -44,6 +48,21 @@ export async function requestPasswordReset(input: z.infer<typeof emailSchema>) {
   } catch (err) {
     console.error("No se pudo enviar el correo de recuperación:", err);
   }
+}
+
+const verifyResetCodeSchema = z.object({
+  email: z.string().email(),
+  code: z.string().length(6),
+});
+
+/** Paso intermedio: confirma que el código es válido sin gastarlo todavía. */
+export async function verifyPasswordResetCode(input: z.infer<typeof verifyResetCodeSchema>) {
+  const data = verifyResetCodeSchema.parse(input);
+  const user = await prisma.user.findUnique({ where: { email: data.email } });
+  if (!user) throw new Error("Código inválido o expirado");
+
+  const ok = await isVerificationCodeValid(user.id, "PASSWORD_RESET", data.code);
+  if (!ok) throw new Error("Código inválido o expirado");
 }
 
 const resetSchema = z.object({
