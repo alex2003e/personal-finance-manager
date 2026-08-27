@@ -6,8 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
 import {
   createVerificationCode,
+  createResetToken,
   consumeVerificationCode,
-  isVerificationCodeValid,
   getLatestCodeExpiry,
 } from "@/lib/verification-code";
 import { sendVerificationCodeEmail, sendPasswordResetCodeEmail } from "@/lib/mailer";
@@ -79,29 +79,40 @@ const verifyResetCodeSchema = z.object({
   code: z.string().length(6),
 });
 
-/** Paso intermedio: confirma que el código es válido sin gastarlo todavía. */
-export async function verifyPasswordResetCode(input: z.infer<typeof verifyResetCodeSchema>) {
+/**
+ * Paso intermedio: consume el código de 6 dígitos (ya cumplió su propósito,
+ * demostrar que el usuario recibió el correo) y a cambio emite un token de
+ * un solo uso con más vigencia (RESET_TOKEN_TTL_MINUTES) para el paso final
+ * de escribir la nueva contraseña — así verificar el código no deja al
+ * usuario corriendo contra el mismo reloj corto de 5 minutos.
+ */
+export async function verifyPasswordResetCode(
+  input: z.infer<typeof verifyResetCodeSchema>
+): Promise<{ token: string; expiresAt: string }> {
   const data = verifyResetCodeSchema.parse(input);
   const user = await prisma.user.findUnique({ where: { email: data.email } });
   if (!user) throw new Error("Código inválido o expirado");
 
-  const ok = await isVerificationCodeValid(user.id, "PASSWORD_RESET", data.code);
+  const ok = await consumeVerificationCode(user.id, "PASSWORD_RESET", data.code);
   if (!ok) throw new Error("Código inválido o expirado");
+
+  const { token, expiresAt } = await createResetToken(user.id);
+  return { token, expiresAt: expiresAt.toISOString() };
 }
 
 const resetSchema = z.object({
   email: z.string().email(),
-  code: z.string().length(6),
+  token: z.string().min(1),
   newPassword: passwordFieldSchema,
 });
 
 export async function resetPassword(input: z.infer<typeof resetSchema>) {
   const data = resetSchema.parse(input);
   const user = await prisma.user.findUnique({ where: { email: data.email } });
-  if (!user) throw new Error("Código inválido o expirado");
+  if (!user) throw new Error("La sesión de recuperación expiró, vuelve a verificar el código.");
 
-  const ok = await consumeVerificationCode(user.id, "PASSWORD_RESET", data.code);
-  if (!ok) throw new Error("Código inválido o expirado");
+  const ok = await consumeVerificationCode(user.id, "PASSWORD_RESET_CONFIRMED", data.token);
+  if (!ok) throw new Error("La sesión de recuperación expiró, vuelve a verificar el código.");
 
   const passwordHash = await bcrypt.hash(data.newPassword, 12);
   await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
