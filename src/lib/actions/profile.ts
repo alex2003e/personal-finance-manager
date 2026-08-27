@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
+import { passwordFieldSchema } from "@/lib/password-policy";
 
 const nameSchema = z.object({ name: z.string().min(1, "El nombre es requerido") });
 
@@ -40,11 +41,10 @@ export async function updateEmail(input: z.infer<typeof emailSchema>) {
   revalidatePath("/profile");
 }
 
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, "Ingresa tu contraseña actual"),
-    newPassword: z.string().min(8, "La nueva contraseña debe tener al menos 8 caracteres"),
-  });
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, "Ingresa tu contraseña actual"),
+  newPassword: passwordFieldSchema,
+});
 
 export async function changePassword(input: z.infer<typeof passwordSchema>) {
   const userId = await requireUserId();

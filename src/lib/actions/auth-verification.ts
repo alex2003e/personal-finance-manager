@@ -11,6 +11,7 @@ import {
   getLatestCodeExpiry,
 } from "@/lib/verification-code";
 import { sendVerificationCodeEmail, sendPasswordResetCodeEmail } from "@/lib/mailer";
+import { passwordFieldSchema } from "@/lib/password-policy";
 
 export async function resendVerificationCode(): Promise<string> {
   const userId = await requireUserId();
@@ -91,7 +92,7 @@ export async function verifyPasswordResetCode(input: z.infer<typeof verifyResetC
 const resetSchema = z.object({
   email: z.string().email(),
   code: z.string().length(6),
-  newPassword: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+  newPassword: passwordFieldSchema,
 });
 
 export async function resetPassword(input: z.infer<typeof resetSchema>) {
