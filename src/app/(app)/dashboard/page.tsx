@@ -95,10 +95,20 @@ export default async function DashboardPage() {
           <p className="text-muted-foreground">Resumen general de tus finanzas</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" render={<a href="/api/export?format=xlsx" />}>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<a href="/api/export?format=xlsx" />}
+          >
             Exportar Excel
           </Button>
-          <Button variant="outline" size="sm" render={<a href="/api/export?format=pdf" />}>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<a href="/api/export?format=pdf" />}
+          >
             Exportar PDF
           </Button>
         </div>
