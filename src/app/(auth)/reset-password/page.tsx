@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { resetPassword } from "@/lib/actions/auth-verification";
+import { PasswordRequirements, isPasswordValid } from "@/components/password-requirements";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -100,6 +101,7 @@ function ResetPasswordForm() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              <PasswordRequirements password={newPassword} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
@@ -121,7 +123,7 @@ function ResetPasswordForm() {
             <Button
               type="submit"
               className="w-full"
-              disabled={loading || !newPassword || newPassword !== confirmPassword}
+              disabled={loading || !isPasswordValid(newPassword) || newPassword !== confirmPassword}
             >
               {loading ? "Guardando..." : "Restablecer contraseña"}
             </Button>
