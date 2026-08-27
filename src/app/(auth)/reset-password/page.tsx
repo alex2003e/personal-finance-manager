@@ -19,13 +19,30 @@ import { resetPassword } from "@/lib/actions/auth-verification";
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState(searchParams.get("email") ?? "");
-  const [code, setCode] = useState("");
+  const email = searchParams.get("email") ?? "";
+  const code = searchParams.get("code") ?? "";
+
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+
+  if (!email || !code) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Falta verificar el código</CardTitle>
+          <CardDescription>Vuelve a solicitar la recuperación desde el inicio.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/forgot-password" className="text-sm text-primary underline">
+            Recuperar contraseña
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,35 +63,13 @@ function ResetPasswordForm() {
     <Card>
       <CardHeader>
         <CardTitle>Nueva contraseña</CardTitle>
-        <CardDescription>Ingresa el código que te enviamos y tu nueva contraseña.</CardDescription>
+        <CardDescription>Elige la nueva contraseña para tu cuenta.</CardDescription>
       </CardHeader>
       <CardContent>
         {done ? (
           <p className="text-sm text-success">Contraseña actualizada. Redirigiendo a iniciar sesión...</p>
         ) : (
           <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="code">Código</Label>
-              <Input
-                id="code"
-                inputMode="numeric"
-                maxLength={6}
-                required
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                className="text-center text-lg tracking-[0.5em]"
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword">Nueva contraseña</Label>
               <div className="relative">
@@ -83,6 +78,7 @@ function ResetPasswordForm() {
                   type={showPassword ? "text" : "password"}
                   required
                   minLength={8}
+                  autoFocus
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="pr-10"
@@ -99,7 +95,7 @@ function ResetPasswordForm() {
               </div>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading || code.length !== 6}>
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Guardando..." : "Restablecer contraseña"}
             </Button>
           </form>

@@ -27,6 +27,19 @@ export async function createVerificationCode(
   return code;
 }
 
+/** Verifica que un código sea válido SIN consumirlo (para un paso intermedio de confirmación). */
+export async function isVerificationCodeValid(
+  userId: string,
+  type: "EMAIL_VERIFY" | "PASSWORD_RESET",
+  code: string
+): Promise<boolean> {
+  const record = await prisma.verificationCode.findFirst({
+    where: { userId, type, code, consumedAt: null, expiresAt: { gt: new Date() } },
+    orderBy: { createdAt: "desc" },
+  });
+  return !!record;
+}
+
 /** Verifica y consume un código; retorna true si era válido. */
 export async function consumeVerificationCode(
   userId: string,
