@@ -6,7 +6,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="mx-auto max-w-lg">
         <h1 className="text-2xl font-semibold">Perfil</h1>
         <p className="text-muted-foreground">
           Gestiona tu información de cuenta · Miembro desde{" "}

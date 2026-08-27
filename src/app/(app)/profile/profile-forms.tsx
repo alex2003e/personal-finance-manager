@@ -180,7 +180,7 @@ export function ProfileForms({
   }
 
   return (
-    <div className="max-w-lg space-y-6">
+    <div className="mx-auto max-w-lg space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Cuenta</CardTitle>
