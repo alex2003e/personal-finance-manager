@@ -8,19 +8,28 @@ import {
   createVerificationCode,
   consumeVerificationCode,
   isVerificationCodeValid,
+  getLatestCodeExpiry,
 } from "@/lib/verification-code";
 import { sendVerificationCodeEmail, sendPasswordResetCodeEmail } from "@/lib/mailer";
 
-export async function resendVerificationCode() {
+export async function resendVerificationCode(): Promise<string> {
   const userId = await requireUserId();
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
-  if (user.emailVerified) return;
+  if (user.emailVerified) throw new Error("Este correo ya está verificado");
 
-  const code = await createVerificationCode(userId, "EMAIL_VERIFY");
+  const { code, expiresAt } = await createVerificationCode(userId, "EMAIL_VERIFY");
   await sendVerificationCodeEmail(user.email, code);
+  return expiresAt.toISOString();
 }
 // NOTA: aquí sí dejamos que el error se propague — a diferencia del registro,
 // el usuario pidió explícitamente "reenviar" y debe enterarse si falló.
+
+/** Vigencia del código de verificación de email activo (para el temporizador). */
+export async function getEmailVerifyCodeExpiry(): Promise<string | null> {
+  const userId = await requireUserId();
+  const expiresAt = await getLatestCodeExpiry(userId, "EMAIL_VERIFY");
+  return expiresAt ? expiresAt.toISOString() : null;
+}
 
 const codeSchema = z.object({ code: z.string().length(6) });
 
@@ -36,18 +45,32 @@ export async function verifyEmailCode(input: z.infer<typeof codeSchema>) {
 
 const emailSchema = z.object({ email: z.string().email() });
 
-export async function requestPasswordReset(input: z.infer<typeof emailSchema>) {
+export async function requestPasswordReset(
+  input: z.infer<typeof emailSchema>
+): Promise<string | null> {
   const data = emailSchema.parse(input);
   const user = await prisma.user.findUnique({ where: { email: data.email } });
   // Respuesta genérica sin importar si el email existe, para no filtrar cuentas registradas.
-  if (!user) return;
+  if (!user) return null;
 
-  const code = await createVerificationCode(user.id, "PASSWORD_RESET");
+  const { code, expiresAt } = await createVerificationCode(user.id, "PASSWORD_RESET");
   try {
     await sendPasswordResetCodeEmail(user.email, code);
   } catch (err) {
     console.error("No se pudo enviar el correo de recuperación:", err);
   }
+  return expiresAt.toISOString();
+}
+
+/** Vigencia del código de recuperación activo para ese email (para el temporizador). */
+export async function getPasswordResetCodeExpiry(
+  input: z.infer<typeof emailSchema>
+): Promise<string | null> {
+  const data = emailSchema.parse(input);
+  const user = await prisma.user.findUnique({ where: { email: data.email } });
+  if (!user) return null;
+  const expiresAt = await getLatestCodeExpiry(user.id, "PASSWORD_RESET");
+  return expiresAt ? expiresAt.toISOString() : null;
 }
 
 const verifyResetCodeSchema = z.object({

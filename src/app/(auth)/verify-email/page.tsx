@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
@@ -13,7 +13,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { verifyEmailCode, resendVerificationCode } from "@/lib/actions/auth-verification";
+import { CodeExpiryTimer } from "@/components/code-expiry-timer";
+import {
+  verifyEmailCode,
+  resendVerificationCode,
+  getEmailVerifyCodeExpiry,
+} from "@/lib/actions/auth-verification";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
@@ -22,6 +27,11 @@ export default function VerifyEmailPage() {
   const [loading, setLoading] = useState(false);
   const [resent, setResent] = useState(false);
   const [resending, setResending] = useState(false);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    getEmailVerifyCodeExpiry().then(setExpiresAt);
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,7 +52,8 @@ export default function VerifyEmailPage() {
     setResending(true);
     setError(null);
     try {
-      await resendVerificationCode();
+      const newExpiresAt = await resendVerificationCode();
+      setExpiresAt(newExpiresAt);
       setResent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo reenviar el código");
@@ -72,6 +83,7 @@ export default function VerifyEmailPage() {
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               className="text-center text-lg tracking-[0.5em]"
             />
+            <CodeExpiryTimer expiresAt={expiresAt} onExpire={() => setExpiresAt(null)} />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           {resent && <p className="text-sm text-success">Código reenviado.</p>}

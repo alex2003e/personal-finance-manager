@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   });
 
   try {
-    const code = await createVerificationCode(user.id, "EMAIL_VERIFY");
+    const { code } = await createVerificationCode(user.id, "EMAIL_VERIFY");
     await sendVerificationCodeEmail(user.email, code);
   } catch (err) {
     // No bloqueamos el registro si el correo falla (ej. Gmail sin
