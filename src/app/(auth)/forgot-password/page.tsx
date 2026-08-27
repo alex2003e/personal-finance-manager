@@ -20,14 +20,21 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    await requestPasswordReset({ email });
-    setLoading(false);
-    setSent(true);
-    setTimeout(() => router.push(`/verify-reset-code?email=${encodeURIComponent(email)}`), 1200);
+    try {
+      await requestPasswordReset({ email });
+      setSent(true);
+      setTimeout(() => router.push(`/verify-reset-code?email=${encodeURIComponent(email)}`), 1200);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo enviar el código");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -53,6 +60,7 @@ export default function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Enviando..." : "Enviar código"}
             </Button>

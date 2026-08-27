@@ -1,16 +1,38 @@
 import { prisma } from "@/lib/prisma";
 
-const CODE_TTL_MINUTES = 15;
+const CODE_TTL_MINUTES = 5;
+const RESEND_COOLDOWN_MINUTES = 5;
 
 function generateSixDigitCode(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
-/** Crea (e invalida cualquier código previo del mismo tipo) un código de 6 dígitos. */
+/**
+ * Crea (e invalida cualquier código previo del mismo tipo) un código de 6
+ * dígitos. Aplica un cooldown de RESEND_COOLDOWN_MINUTES desde el último
+ * código emitido (sin importar si se consumió) para que no puedan
+ * bombardear el correo del usuario ni fuerza-bruta el reenvío.
+ */
 export async function createVerificationCode(
   userId: string,
   type: "EMAIL_VERIFY" | "PASSWORD_RESET"
 ): Promise<string> {
+  const last = await prisma.verificationCode.findFirst({
+    where: { userId, type },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (last) {
+    const cooldownEndsAt = new Date(last.createdAt.getTime() + RESEND_COOLDOWN_MINUTES * 60_000);
+    const msRemaining = cooldownEndsAt.getTime() - Date.now();
+    if (msRemaining > 0) {
+      const minutesRemaining = Math.ceil(msRemaining / 60_000);
+      throw new Error(
+        `Debes esperar ${minutesRemaining} ${minutesRemaining === 1 ? "minuto" : "minutos"} antes de pedir otro código.`
+      );
+    }
+  }
+
   const code = generateSixDigitCode();
   const expiresAt = new Date(Date.now() + CODE_TTL_MINUTES * 60_000);
 
