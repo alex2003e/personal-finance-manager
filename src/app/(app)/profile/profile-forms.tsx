@@ -3,11 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { updateName, updateEmail, changePassword, setEmailAlertsEnabled } from "@/lib/actions/profile";
 
 function PasswordField({
@@ -48,6 +56,64 @@ function PasswordField({
   );
 }
 
+function ChangePasswordDialog() {
+  const [open, setOpen] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await changePassword({ currentPassword, newPassword });
+      toast.success("Contraseña actualizada");
+      setCurrentPassword("");
+      setNewPassword("");
+      setOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo actualizar");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger
+        render={
+          <Button variant="outline" size="sm">
+            <KeyRound className="h-4 w-4" />
+            Cambiar contraseña
+          </Button>
+        }
+      />
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Cambiar contraseña</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={onSubmit} className="space-y-3">
+          <PasswordField
+            id="currentPassword"
+            label="Contraseña actual"
+            value={currentPassword}
+            onChange={setCurrentPassword}
+          />
+          <PasswordField
+            id="newPassword"
+            label="Nueva contraseña"
+            value={newPassword}
+            onChange={setNewPassword}
+          />
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Guardando..." : "Cambiar contraseña"}
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function ProfileForms({
   name: initialName,
   email: initialEmail,
@@ -64,28 +130,22 @@ export function ProfileForms({
 
   const [name, setName] = useState(initialName);
   const [nameLoading, setNameLoading] = useState(false);
-  const [nameMsg, setNameMsg] = useState<string | null>(null);
 
+  const [emailEditing, setEmailEditing] = useState(false);
   const [email, setEmail] = useState(initialEmail);
   const [emailPassword, setEmailPassword] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
-  const [emailMsg, setEmailMsg] = useState<{ type: "error" | "success"; text: string } | null>(null);
-
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [pwLoading, setPwLoading] = useState(false);
-  const [pwMsg, setPwMsg] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
   async function onSaveName(e: React.FormEvent) {
     e.preventDefault();
+    if (name === initialName) return;
     setNameLoading(true);
-    setNameMsg(null);
     try {
       await updateName({ name });
-      setNameMsg("Nombre actualizado");
+      toast.success("Nombre actualizado");
       router.refresh();
     } catch (err) {
-      setNameMsg(err instanceof Error ? err.message : "No se pudo actualizar");
+      toast.error(err instanceof Error ? err.message : "No se pudo actualizar");
     } finally {
       setNameLoading(false);
     }
@@ -94,40 +154,15 @@ export function ProfileForms({
   async function onSaveEmail(e: React.FormEvent) {
     e.preventDefault();
     setEmailLoading(true);
-    setEmailMsg(null);
     try {
       await updateEmail({ email, currentPassword: emailPassword });
-      setEmailMsg({
-        type: "success",
-        text: "Email actualizado. Vuelve a iniciar sesión para que el cambio tome efecto.",
-      });
+      toast.success("Email actualizado. Vuelve a iniciar sesión para que el cambio tome efecto.");
       setEmailPassword("");
+      setEmailEditing(false);
     } catch (err) {
-      setEmailMsg({
-        type: "error",
-        text: err instanceof Error ? err.message : "No se pudo actualizar",
-      });
+      toast.error(err instanceof Error ? err.message : "No se pudo actualizar");
     } finally {
       setEmailLoading(false);
-    }
-  }
-
-  async function onSavePassword(e: React.FormEvent) {
-    e.preventDefault();
-    setPwLoading(true);
-    setPwMsg(null);
-    try {
-      await changePassword({ currentPassword, newPassword });
-      setPwMsg({ type: "success", text: "Contraseña actualizada" });
-      setCurrentPassword("");
-      setNewPassword("");
-    } catch (err) {
-      setPwMsg({
-        type: "error",
-        text: err instanceof Error ? err.message : "No se pudo actualizar",
-      });
-    } finally {
-      setPwLoading(false);
     }
   }
 
@@ -142,7 +177,78 @@ export function ProfileForms({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-lg space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Cuenta</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={onSaveName} className="space-y-1">
+            <Label htmlFor="name">Nombre</Label>
+            <div className="flex gap-2">
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+              {name !== initialName && (
+                <Button type="submit" size="sm" disabled={nameLoading}>
+                  {nameLoading ? "..." : "Guardar"}
+                </Button>
+              )}
+            </div>
+          </form>
+
+          <div className="space-y-1">
+            <Label htmlFor="email">Email</Label>
+            {emailEditing ? (
+              <form onSubmit={onSaveEmail} className="space-y-2">
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <PasswordField
+                  id="emailPassword"
+                  label="Confirma tu contraseña actual"
+                  value={emailPassword}
+                  onChange={setEmailPassword}
+                />
+                <div className="flex gap-2">
+                  <Button type="submit" size="sm" disabled={emailLoading}>
+                    {emailLoading ? "Guardando..." : "Guardar"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setEmailEditing(false);
+                      setEmail(initialEmail);
+                      setEmailPassword("");
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Input id="email" value={email} disabled className="text-muted-foreground" />
+                <Button type="button" variant="outline" size="sm" onClick={() => setEmailEditing(true)}>
+                  Cambiar
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-1 border-t pt-4">
+            <Label>Contraseña</Label>
+            <div>
+              <ChangePasswordDialog />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Notificaciones por correo</CardTitle>
@@ -165,98 +271,13 @@ export function ProfileForms({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Nombre</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSaveName} className="flex flex-wrap items-end gap-3">
-            <div className="min-w-48 flex-1 space-y-1">
-              <Label htmlFor="name">Nombre</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-            </div>
-            <Button type="submit" disabled={nameLoading}>
-              {nameLoading ? "Guardando..." : "Guardar"}
-            </Button>
-          </form>
-          {nameMsg && <p className="mt-2 text-sm text-muted-foreground">{nameMsg}</p>}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Email</CardTitle>
-          <CardDescription>Necesitas confirmar tu contraseña actual para cambiarlo.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSaveEmail} className="space-y-3">
-            <div className="space-y-1">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <PasswordField
-              id="emailPassword"
-              label="Contraseña actual"
-              value={emailPassword}
-              onChange={setEmailPassword}
-            />
-            <Button type="submit" disabled={emailLoading}>
-              {emailLoading ? "Guardando..." : "Guardar"}
-            </Button>
-          </form>
-          {emailMsg && (
-            <p
-              className={`mt-2 text-sm ${emailMsg.type === "error" ? "text-destructive" : "text-success"}`}
-            >
-              {emailMsg.text}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Contraseña</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSavePassword} className="space-y-3">
-            <PasswordField
-              id="currentPassword"
-              label="Contraseña actual"
-              value={currentPassword}
-              onChange={setCurrentPassword}
-            />
-            <PasswordField
-              id="newPassword"
-              label="Nueva contraseña"
-              value={newPassword}
-              onChange={setNewPassword}
-            />
-            <Button type="submit" disabled={pwLoading}>
-              {pwLoading ? "Guardando..." : "Cambiar contraseña"}
-            </Button>
-          </form>
-          {pwMsg && (
-            <p className={`mt-2 text-sm ${pwMsg.type === "error" ? "text-destructive" : "text-success"}`}>
-              {pwMsg.text}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
       <Card className="border-destructive/30">
         <CardHeader>
           <CardTitle className="text-base">Cerrar sesión</CardTitle>
           <CardDescription>Cierra tu sesión en este dispositivo.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button variant="outline" onClick={() => signOut({ callbackUrl: "/login" })}>
+          <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: "/login" })}>
             Cerrar sesión
           </Button>
         </CardContent>
