@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import {
@@ -17,13 +17,12 @@ import { Label } from "@/components/ui/label";
 import { resetPassword } from "@/lib/actions/auth-verification";
 import { PasswordRequirements, isPasswordValid } from "@/components/password-requirements";
 import { CodeExpiryTimer } from "@/components/code-expiry-timer";
+import { getResetSession, clearResetSession } from "@/lib/reset-password-session";
 
-function ResetPasswordForm() {
+export default function ResetPasswordPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const email = searchParams.get("email") ?? "";
-  const token = searchParams.get("token") ?? "";
-  const tokenExpiresAt = searchParams.get("expiresAt");
+  const [session, setSession] = useState<{ email: string; token?: string; expiresAt?: string } | null>(null);
+  const [ready, setReady] = useState(false);
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,9 +31,16 @@ function ResetPasswordForm() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
+  useEffect(() => {
+    setSession(getResetSession());
+    setReady(true);
+  }, []);
+
   const passwordsMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
 
-  if (!email || !token) {
+  if (!ready) return null;
+
+  if (!session?.email || !session.token) {
     return (
       <Card>
         <CardHeader>
@@ -50,6 +56,8 @@ function ResetPasswordForm() {
     );
   }
 
+  const { email, token } = session;
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -59,7 +67,8 @@ function ResetPasswordForm() {
     }
     setLoading(true);
     try {
-      await resetPassword({ email, token, newPassword });
+      await resetPassword({ email, token: token!, newPassword });
+      clearResetSession();
       setDone(true);
       setTimeout(() => router.push("/login"), 1200);
     } catch (err) {
@@ -75,7 +84,7 @@ function ResetPasswordForm() {
         <CardTitle>Nueva contraseña</CardTitle>
         <CardDescription>Elige la nueva contraseña para tu cuenta.</CardDescription>
         <CodeExpiryTimer
-          expiresAt={tokenExpiresAt}
+          expiresAt={session.expiresAt ?? null}
           activeLabel="Tienes"
           expiredLabel="Se acabó el tiempo para completar el cambio, vuelve a solicitar el código."
         />
@@ -143,13 +152,5 @@ function ResetPasswordForm() {
         </p>
       </CardContent>
     </Card>
-  );
-}
-
-export default function ResetPasswordPage() {
-  return (
-    <Suspense>
-      <ResetPasswordForm />
-    </Suspense>
   );
 }
