@@ -16,7 +16,7 @@ function generateSixDigitCode(): string {
 export async function createVerificationCode(
   userId: string,
   type: "EMAIL_VERIFY" | "PASSWORD_RESET"
-): Promise<string> {
+): Promise<{ code: string; expiresAt: Date }> {
   const last = await prisma.verificationCode.findFirst({
     where: { userId, type },
     orderBy: { createdAt: "desc" },
@@ -46,7 +46,19 @@ export async function createVerificationCode(
     }),
   ]);
 
-  return code;
+  return { code, expiresAt };
+}
+
+/** Vigencia del código más reciente (para mostrar un temporizador en el cliente). */
+export async function getLatestCodeExpiry(
+  userId: string,
+  type: "EMAIL_VERIFY" | "PASSWORD_RESET"
+): Promise<Date | null> {
+  const record = await prisma.verificationCode.findFirst({
+    where: { userId, type, consumedAt: null, expiresAt: { gt: new Date() } },
+    orderBy: { createdAt: "desc" },
+  });
+  return record?.expiresAt ?? null;
 }
 
 /** Verifica que un código sea válido SIN consumirlo (para un paso intermedio de confirmación). */

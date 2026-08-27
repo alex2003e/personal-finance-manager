@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,7 +13,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { requestPasswordReset, verifyPasswordResetCode } from "@/lib/actions/auth-verification";
+import { CodeExpiryTimer } from "@/components/code-expiry-timer";
+import {
+  requestPasswordReset,
+  verifyPasswordResetCode,
+  getPasswordResetCodeExpiry,
+} from "@/lib/actions/auth-verification";
 
 function VerifyResetCodeForm() {
   const router = useRouter();
@@ -25,6 +30,11 @@ function VerifyResetCodeForm() {
   const [loading, setLoading] = useState(false);
   const [resent, setResent] = useState(false);
   const [resending, setResending] = useState(false);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (email) getPasswordResetCodeExpiry({ email }).then(setExpiresAt);
+  }, [email]);
 
   if (!email) {
     return (
@@ -63,7 +73,8 @@ function VerifyResetCodeForm() {
     setError(null);
     setResent(false);
     try {
-      await requestPasswordReset({ email });
+      const newExpiresAt = await requestPasswordReset({ email });
+      setExpiresAt(newExpiresAt);
       setResent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo reenviar el código");
@@ -93,6 +104,7 @@ function VerifyResetCodeForm() {
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               className="text-center text-lg tracking-[0.5em]"
             />
+            <CodeExpiryTimer expiresAt={expiresAt} onExpire={() => setExpiresAt(null)} />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           {resent && <p className="text-sm text-success">Código reenviado.</p>}
