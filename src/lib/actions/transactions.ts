@@ -5,10 +5,14 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
 import { quincenaFromDate } from "@/lib/quincena";
+import { toCOP, fromCOP } from "@/lib/currency";
+import { toNumber } from "@/lib/format";
 
 const schema = z.object({
   date: z.coerce.date(),
   amount: z.coerce.number().positive(),
+  currency: z.string().default("COP"),
+  exchangeRateToCOP: z.coerce.number().positive().optional(),
   type: z.enum(["INCOME", "EXPENSE", "DEBT_PAYMENT", "TRANSFER", "SAVINGS"]),
   category: z.string().min(1),
   notes: z.string().optional(),
@@ -16,9 +20,10 @@ const schema = z.object({
   accountId: z.string().optional(),
 });
 
-export async function createTransaction(input: z.infer<typeof schema>) {
+export async function createTransaction(input: z.input<typeof schema>) {
   const userId = await requireUserId();
   const data = schema.parse(input);
+  const amountCOP = toCOP(data.amount, data.currency, data.exchangeRateToCOP);
 
   await prisma.$transaction(async (tx) => {
     await tx.transaction.create({
@@ -27,6 +32,8 @@ export async function createTransaction(input: z.infer<typeof schema>) {
         date: data.date,
         quincena: quincenaFromDate(data.date),
         amount: data.amount,
+        currency: data.currency,
+        exchangeRateToCOP: data.currency !== "COP" ? data.exchangeRateToCOP : undefined,
         type: data.type,
         category: data.category,
         notes: data.notes,
@@ -36,9 +43,15 @@ export async function createTransaction(input: z.infer<typeof schema>) {
     });
 
     if (data.type === "DEBT_PAYMENT" && data.debtId) {
+      const debt = await tx.debt.findFirstOrThrow({ where: { id: data.debtId, userId } });
+      const amountInDebtCurrency = fromCOP(
+        amountCOP,
+        debt.currency,
+        debt.exchangeRateToCOP ? toNumber(debt.exchangeRateToCOP) : null
+      );
       await tx.debt.update({
         where: { id: data.debtId },
-        data: { balance: { decrement: data.amount } },
+        data: { balance: { decrement: amountInDebtCurrency } },
       });
       const updated = await tx.debt.findUnique({ where: { id: data.debtId } });
       if (updated && Number(updated.balance) <= 0 && !updated.closedAt) {
@@ -47,9 +60,15 @@ export async function createTransaction(input: z.infer<typeof schema>) {
     }
 
     if (data.accountId) {
+      const account = await tx.account.findFirstOrThrow({ where: { id: data.accountId, userId } });
+      const amountInAccountCurrency = fromCOP(
+        amountCOP,
+        account.currency,
+        account.exchangeRateToCOP ? toNumber(account.exchangeRateToCOP) : null
+      );
       // El ingreso suma a la cuenta; cualquier otro tipo (gasto, pago de
       // deuda, ahorro, transferencia) sale de la cuenta.
-      const delta = data.type === "INCOME" ? data.amount : -data.amount;
+      const delta = data.type === "INCOME" ? amountInAccountCurrency : -amountInAccountCurrency;
       await tx.account.update({
         where: { id: data.accountId },
         data: { balance: { increment: delta } },
@@ -75,19 +94,41 @@ export async function deleteTransaction(id: string) {
     );
   }
 
+  const amountCOP = toCOP(
+    toNumber(txn.amount),
+    txn.currency,
+    txn.exchangeRateToCOP ? toNumber(txn.exchangeRateToCOP) : null
+  );
+
   await prisma.$transaction(async (tx) => {
     if (txn.type === "DEBT_PAYMENT" && txn.debtId) {
-      await tx.debt.update({
-        where: { id: txn.debtId },
-        data: { balance: { increment: txn.amount }, closedAt: null },
-      });
+      const debt = await tx.debt.findFirst({ where: { id: txn.debtId, userId } });
+      if (debt) {
+        const amountInDebtCurrency = fromCOP(
+          amountCOP,
+          debt.currency,
+          debt.exchangeRateToCOP ? toNumber(debt.exchangeRateToCOP) : null
+        );
+        await tx.debt.update({
+          where: { id: txn.debtId },
+          data: { balance: { increment: amountInDebtCurrency }, closedAt: null },
+        });
+      }
     }
     if (txn.accountId) {
-      const delta = txn.type === "INCOME" ? -Number(txn.amount) : Number(txn.amount);
-      await tx.account.update({
-        where: { id: txn.accountId },
-        data: { balance: { increment: delta } },
-      });
+      const account = await tx.account.findFirst({ where: { id: txn.accountId, userId } });
+      if (account) {
+        const amountInAccountCurrency = fromCOP(
+          amountCOP,
+          account.currency,
+          account.exchangeRateToCOP ? toNumber(account.exchangeRateToCOP) : null
+        );
+        const delta = txn.type === "INCOME" ? -amountInAccountCurrency : amountInAccountCurrency;
+        await tx.account.update({
+          where: { id: txn.accountId },
+          data: { balance: { increment: delta } },
+        });
+      }
     }
     await tx.transaction.delete({ where: { id } });
   });
