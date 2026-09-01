@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { parseLocalDateInput } from "@/lib/date-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
@@ -46,7 +47,7 @@ export function PayDebtDialog({
       await payDebt({
         debtId,
         amount: Number(form.get("amount")),
-        date: new Date(String(form.get("date"))),
+        date: parseLocalDateInput(String(form.get("date"))),
         notes: String(form.get("notes") || ""),
         accountId,
       });

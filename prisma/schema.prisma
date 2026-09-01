@@ -200,6 +200,10 @@ model Transaction {
   date            DateTime
   quincena        Quincena
   amount          Decimal          @db.Decimal(14, 2)
+  /// Moneda en la que se registró el movimiento (ej. gastos pagados en
+  /// dólares). exchangeRateToCOP solo aplica si currency != "COP".
+  currency        String           @default("COP")
+  exchangeRateToCOP Decimal?       @db.Decimal(16, 4)
   type            TransactionType
   category        String
   notes           String?

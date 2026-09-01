@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
 import { formatCOP, toNumber } from "@/lib/format";
+import { toCOP, currencySymbol } from "@/lib/currency";
 import { monthLabel } from "@/lib/quincena";
 import {
   Card,
@@ -67,12 +68,15 @@ export default async function LedgerPage({
   const expectedIncomeQ1 = Math.round(expectedIncome / 2);
   const expectedIncomeQ2 = expectedIncome - expectedIncomeQ1;
 
+  const amountCOP = (t: (typeof transactions)[number]) =>
+    toCOP(toNumber(t.amount), t.currency, t.exchangeRateToCOP ? toNumber(t.exchangeRateToCOP) : null);
+
   const q1Spent = transactions
     .filter((t) => t.quincena === "Q1" && t.type !== "INCOME" && t.type !== "CARD_CHARGE")
-    .reduce((s, t) => s + toNumber(t.amount), 0);
+    .reduce((s, t) => s + amountCOP(t), 0);
   const q2Spent = transactions
     .filter((t) => t.quincena === "Q2" && t.type !== "INCOME" && t.type !== "CARD_CHARGE")
-    .reduce((s, t) => s + toNumber(t.amount), 0);
+    .reduce((s, t) => s + amountCOP(t), 0);
 
   const totalSpent = q1Spent + q2Spent;
   const diff = expectedIncome - totalSpent;
@@ -102,6 +106,9 @@ export default async function LedgerPage({
           debts={debts
             .filter((d) => !d.closedAt)
             .map((d) => ({ id: d.id, name: d.name, balance: toNumber(d.balance) }))}
+          cards={debts
+            .filter((d) => !d.closedAt && d.type === "CARD")
+            .map((d) => ({ id: d.id, name: d.name, interestRateEA: toNumber(d.interestRateEA) }))}
           accounts={accounts}
           defaultDate={start.toISOString()}
         />
@@ -177,7 +184,14 @@ export default async function LedgerPage({
                     {t.debt ? ` (${t.debt.name})` : ""}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{t.account?.name ?? "—"}</TableCell>
-                  <TableCell>{formatCOP(toNumber(t.amount))}</TableCell>
+                  <TableCell>
+                    {currencySymbol(t.currency)} {new Intl.NumberFormat("es-CO").format(toNumber(t.amount))}
+                    {t.currency !== "COP" && (
+                      <span className="block text-xs text-muted-foreground">
+                        ≈ {formatCOP(amountCOP(t))}
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{t.notes}</TableCell>
                   <TableCell>
                     <DeleteTransactionButton id={t.id} />

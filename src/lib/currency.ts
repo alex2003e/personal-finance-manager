@@ -14,6 +14,12 @@ export function toCOP(amount: number, currency: string, rateToCOP?: number | nul
   return amount * (rateToCOP ?? 1);
 }
 
+/** Inversa de toCOP: convierte un monto en COP a otra moneda usando su tasa. */
+export function fromCOP(amountCOP: number, currency: string, rateToCOP?: number | null): number {
+  if (currency === "COP") return amountCOP;
+  return amountCOP / (rateToCOP ?? 1);
+}
+
 export const CURRENCY_SYMBOL: Record<string, string> = {
   COP: "$",
   USD: "US$",
