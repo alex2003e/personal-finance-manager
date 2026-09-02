@@ -25,6 +25,18 @@ model User {
   /// Momento en que aceptó los Términos y la Política de Privacidad al
   /// registrarse (registro de consentimiento, ver /legal).
   termsAcceptedAt DateTime?
+  /// Id del Customer en Stripe — se crea la primera vez que el usuario
+  /// inicia un checkout, se reusa siempre después (nunca guardamos datos
+  /// de tarjeta nosotros mismos, eso vive solo en Stripe).
+  stripeCustomerId     String?             @unique
+  stripeSubscriptionId String?             @unique
+  subscriptionStatus   SubscriptionStatus?
+  /// "monthly" | "yearly" — el Price de Stripe activo, solo para mostrarlo
+  /// en el perfil sin tener que llamar a la API de Stripe en cada carga.
+  subscriptionPlan     String?
+  /// Fin del período ya pagado — la cuenta sigue con acceso premium hasta
+  /// esta fecha aunque el usuario ya haya cancelado (cancel_at_period_end).
+  currentPeriodEnd     DateTime?
   createdAt     DateTime  @default(now())
 
   accounts         Account[]
@@ -38,6 +50,16 @@ model User {
   goalContributions GoalContribution[]
   netWorthSnapshots NetWorthSnapshot[]
   verificationCodes VerificationCode[]
+}
+
+/// Espejo del estado real de la suscripción en Stripe (se actualiza vía
+/// webhook, nunca se asume desde el cliente).
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
 }
 
 enum VerificationCodeType {
