@@ -94,20 +94,32 @@ export function SubscriptionCard({
               <CreditCard className="h-4 w-4" />
               {loading === "portal" ? "Abriendo..." : "Gestionar suscripción y tarjeta"}
             </Button>
+            <p className="text-xs text-muted-foreground">
+              Tu suscripción se renueva automáticamente en la fecha de cobro. Si quieres
+              cancelarla, hazlo desde el botón de arriba con al menos 3 días de anticipación a
+              esa fecha para evitar el próximo cobro.
+            </p>
           </>
         ) : (
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={() => goToCheckout("monthly")} disabled={loading === "monthly"}>
-              {loading === "monthly" ? "Redirigiendo..." : "Suscribirme mensual"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => goToCheckout("yearly")}
-              disabled={loading === "yearly"}
-            >
-              {loading === "yearly" ? "Redirigiendo..." : "Suscribirme anual"}
-            </Button>
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onClick={() => goToCheckout("monthly")} disabled={loading === "monthly"}>
+                {loading === "monthly" ? "Redirigiendo..." : "Suscribirme mensual"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToCheckout("yearly")}
+                disabled={loading === "yearly"}
+              >
+                {loading === "yearly" ? "Redirigiendo..." : "Suscribirme anual"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              La suscripción se renueva automáticamente en cada fecha de cobro. Si no la
+              cancelas con al menos 3 días de anticipación, se realizará el siguiente cobro sin
+              previo aviso adicional. Puedes cancelarla cuando quieras desde aquí.
+            </p>
           </div>
         )}
       </CardContent>
