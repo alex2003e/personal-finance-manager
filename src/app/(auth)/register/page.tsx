@@ -23,6 +23,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +35,7 @@ export default function RegisterPage() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, termsAccepted }),
     });
 
     if (!res.ok) {
@@ -114,8 +115,26 @@ export default function RegisterPage() {
             </div>
             <PasswordRequirements password={password} />
           </div>
+          <label className="flex items-start gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+            />
+            <span>
+              Acepto los{" "}
+              <a href="/legal/terminos" target="_blank" className="underline">
+                Términos y Condiciones
+              </a>{" "}
+              y la{" "}
+              <a href="/legal/privacidad" target="_blank" className="underline">
+                Política de Privacidad
+              </a>
+            </span>
+          </label>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || !termsAccepted}>
             {loading ? "Creando..." : "Crear cuenta"}
           </Button>
         </form>

@@ -10,6 +10,9 @@ const schema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   email: z.string().email("Email inválido"),
   password: passwordFieldSchema,
+  termsAccepted: z.literal(true, {
+    message: "Debes aceptar los Términos y la Política de Privacidad",
+  }),
 });
 
 export async function POST(req: Request) {
@@ -36,7 +39,7 @@ export async function POST(req: Request) {
   const passwordHash = await bcrypt.hash(password, 12);
 
   const user = await prisma.user.create({
-    data: { name, email, passwordHash },
+    data: { name, email, passwordHash, termsAcceptedAt: new Date() },
     select: { id: true, email: true, name: true },
   });
 

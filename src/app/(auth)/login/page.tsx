@@ -102,6 +102,15 @@ export default function LoginPage() {
             Regístrate
           </Link>
         </p>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          <Link href="/legal/terminos" className="underline">
+            Términos
+          </Link>{" "}
+          ·{" "}
+          <Link href="/legal/privacidad" className="underline">
+            Privacidad
+          </Link>
+        </p>
       </CardContent>
     </Card>
   );
