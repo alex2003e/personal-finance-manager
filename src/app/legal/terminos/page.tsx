@@ -44,9 +44,16 @@ export default function TermsPage() {
       <p>
         Algunas funciones del Servicio requieren una suscripción paga. Los precios, la
         periodicidad de cobro y los medios de pago disponibles se muestran antes de confirmar
-        la suscripción. Puedes cancelar tu suscripción en cualquier momento desde la sección de
-        Configuración; la cancelación aplica al final del período ya pagado, salvo que la ley
-        aplicable exija un reembolso proporcional.
+        la suscripción.
+      </p>
+      <p>
+        <strong>Renovación automática:</strong> la suscripción se renueva automáticamente al
+        final de cada período (mensual o anual) y se cobra a la misma tarjeta registrada, salvo
+        que la canceles. Debes cancelarla con al menos <strong>3 días de anticipación</strong> a
+        la fecha de cobro para evitar el próximo cargo; si cancelas después de ese plazo, el
+        cobro ya programado podría procesarse igual. Puedes cancelar en cualquier momento desde
+        Perfil → Suscripción; la cancelación aplica al final del período ya pagado, salvo que la
+        ley aplicable exija un reembolso proporcional.
       </p>
 
       <h2>5. Tus datos financieros</h2>
